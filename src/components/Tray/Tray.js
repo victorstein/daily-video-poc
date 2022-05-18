@@ -28,7 +28,7 @@ export default function Tray({ leaveCall }) {
     useScreenShare();
 
   const [showMeetingInformation, setShowMeetingInformation] = useState(false);
-  const [musicPlaying, setMusicPlaying] = useState(false);
+  const [musicPlaying] = useState(false);
 
   const localParticipant = useLocalParticipant();
   const localVideo = useVideoTrack(localParticipant?.session_id);
@@ -59,7 +59,7 @@ export default function Tray({ leaveCall }) {
     await callObject.setInputDevicesAsync({
       audioSource: mixedAudioTracks
     })
-  }, [callObject, musicPlaying])
+  }, [callObject])
 
   const toggleVideo = useCallback(() => {
     callObject.setLocalVideo(mutedVideo);
