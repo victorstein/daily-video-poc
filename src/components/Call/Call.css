@@ -5,7 +5,9 @@
    https://www.daily.co/blog/add-pagination-to-a-custom-daily-video-chat-app-to-support-larger-meetings/
  */
 .call {
-  display: grid;
+  display: flex;
+  flex: 1;
+  justify-content: center;
   padding: 5rem;
   align-items: center;
   justify-items: center;
