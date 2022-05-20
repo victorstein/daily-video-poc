@@ -23,19 +23,18 @@ import 'react-h5-audio-player/lib/styles.css';
 
 export default function Tray({ leaveCall }) {
   const callObject = useDaily();
-  console.log(callObject.participants())
   const { isSharingScreen, startScreenShare, stopScreenShare } =
     useScreenShare();
   const audioPlayer = useRef(null)
-  const { mixedAudioTracks } = useAudioContext({ musicSource: audioPlayer })
+  const { mixedAudioTracks, micGain } = useAudioContext({ musicSource: audioPlayer })
+  console.log("MIC GAIN", micGain)
 
   const [showMeetingInformation, setShowMeetingInformation] = useState(false);
+  const [mutedAudio, setMutedAudio] = useState(false)
 
   const localParticipant = useLocalParticipant();
   const localVideo = useVideoTrack(localParticipant?.session_id);
-  const localAudio = useAudioTrack(localParticipant?.session_id);
   const mutedVideo = localVideo.isOff;
-  const mutedAudio = localAudio.isOff;
 
   useEffect(() => {
     const addTracksToStream = async () => {
@@ -54,8 +53,9 @@ export default function Tray({ leaveCall }) {
   }, [callObject, mutedVideo]);
 
   const toggleAudio = useCallback(() => {
-    callObject.setLocalAudio(mutedAudio);
-  }, [callObject, mutedAudio]);
+    micGain.gain.value = mutedAudio ? 1 : 0
+    setMutedAudio(!mutedAudio)
+  }, [mutedAudio, micGain]);
 
   const toggleScreenShare = () =>
     isSharingScreen ? stopScreenShare() : startScreenShare();
