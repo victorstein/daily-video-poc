@@ -7,6 +7,7 @@
     "@daily-co/daily-react-hooks": "^0.1.1",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
+    "react-h5-audio-player": "^3.8.4",
     "react-scripts": "5.0.0",
     "recoil": "^0.5.2"
   },
