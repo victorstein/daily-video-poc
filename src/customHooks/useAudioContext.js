@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 
 export const useAudioContext = ({ musicSource }) => {
   const [state, setState] = useState({
@@ -15,13 +15,13 @@ export const useAudioContext = ({ musicSource }) => {
     return microphone
   }
 
-  const getBackgroundMusic = async (audioContext) => {
+  const getBackgroundMusic = useCallback(() => async (audioContext) => {
     const element = musicSource.current.audio.current
     const bgMusic = audioContext.createMediaElementSource(element)
     // Connect to local destination
     bgMusic.connect(audioContext.destination)
     return bgMusic
-  }
+  }, [musicSource])
 
   const mixTracks = async (audioContext, microphone, bgMusic) => {
     const mixedOutput = audioContext.createMediaStreamDestination();
@@ -32,19 +32,21 @@ export const useAudioContext = ({ musicSource }) => {
     return mixedAudioTracks
   }
 
-  const init = async () => {
-    if (state.audioContext === null) {
-      const audioContext = new AudioContext()
-
-      const microphone = await getMicrophone(audioContext)
-      const bgMusic = await getBackgroundMusic(audioContext)
-      const mixedAudioTracks = await mixTracks(audioContext, microphone, bgMusic)
-
-      setState({ audioContext, microphone, bgMusic, mixedAudioTracks })
+  useEffect(() => {
+    const init = async () => {
+      if (state.audioContext === null) {
+        const audioContext = new AudioContext()
+  
+        const microphone = await getMicrophone(audioContext)
+        const bgMusic = await getBackgroundMusic(audioContext)
+        const mixedAudioTracks = await mixTracks(audioContext, microphone, bgMusic)
+  
+        setState({ audioContext, microphone, bgMusic, mixedAudioTracks })
+      }
     }
-  }
 
-  useEffect(() => { init() }, [])
+    init()
+  }, [state.audioContext, getBackgroundMusic])
 
   return state
 }

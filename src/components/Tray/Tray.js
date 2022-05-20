@@ -27,7 +27,7 @@ export default function Tray({ leaveCall }) {
   const { isSharingScreen, startScreenShare, stopScreenShare } =
     useScreenShare();
   const audioPlayer = useRef(null)
-  const { bgMusic, mixedAudioTracks } = useAudioContext({ musicSource: audioPlayer })
+  const { mixedAudioTracks } = useAudioContext({ musicSource: audioPlayer })
 
   const [showMeetingInformation, setShowMeetingInformation] = useState(false);
 
@@ -37,17 +37,17 @@ export default function Tray({ leaveCall }) {
   const mutedVideo = localVideo.isOff;
   const mutedAudio = localAudio.isOff;
 
-  const addTracksToStream = async () => {
-    await callObject.setInputDevicesAsync({
-      audioSource: mixedAudioTracks
-    })
-  } 
-
   useEffect(() => {
+    const addTracksToStream = async () => {
+      await callObject.setInputDevicesAsync({
+        audioSource: mixedAudioTracks
+      })
+    }
+
     if (mixedAudioTracks) {
       addTracksToStream()
     }
-  }, [mixedAudioTracks])
+  }, [mixedAudioTracks, callObject])
 
   const toggleVideo = useCallback(() => {
     callObject.setLocalVideo(mutedVideo);
