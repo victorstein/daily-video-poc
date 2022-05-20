@@ -3,8 +3,7 @@ import {
   useDaily,
   useScreenShare,
   useLocalParticipant,
-  useVideoTrack,
-  useAudioTrack,
+  useVideoTrack
 } from '@daily-co/daily-react-hooks';
 import MeetingInformation from '../MeetingInformation/MeetingInformation';
 import './Tray.css';
