@@ -15,7 +15,7 @@ export const useAudioContext = ({ musicSource }) => {
     return microphone
   }
 
-  const getBackgroundMusic = useCallback(() => async (audioContext) => {
+  const getBackgroundMusic = useCallback(async (audioContext) => {
     const element = musicSource.current.audio.current
     const bgMusic = audioContext.createMediaElementSource(element)
     // Connect to local destination
