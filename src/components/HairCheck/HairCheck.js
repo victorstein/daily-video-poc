@@ -14,7 +14,6 @@ export default function HairCheck({ joinCall, cancelCall }) {
   const localParticipant = useLocalParticipant();
   const videoTrack = useVideoTrack(localParticipant?.session_id);
   const { microphones, speakers, cameras, setMicrophone, setCamera, setSpeaker } = useDevices();
-  console.log(useDevices())
   const callObject = useDaily();
   const videoElement = useRef();
 

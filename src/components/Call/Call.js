@@ -39,7 +39,6 @@ export default function Call() {
 
   /* This is for displaying remote participants: this includes other humans, but also screen shares. */
   const { screens } = useScreenShare();
-  console.log(useParticipantIds())
   const remoteParticipantIds = useParticipantIds({ filter: 'remote' });
 
   const renderCallScreen = () => {
