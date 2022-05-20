@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
 import {
   useDaily,
   useScreenShare,
@@ -7,7 +7,6 @@ import {
   useAudioTrack,
 } from '@daily-co/daily-react-hooks';
 import MeetingInformation from '../MeetingInformation/MeetingInformation';
-
 import './Tray.css';
 import {
   CameraOn,
@@ -16,19 +15,21 @@ import {
   MicrophoneOff,
   MicrophoneOn,
   Screenshare,
-  Info,
-  PlayMusic,
-  StopMusic,
+  Info
 } from './Icons';
-
+import { useAudioContext } from '../../customHooks/useAudioContext';
+import AudioPlayer from 'react-h5-audio-player';
+import 'react-h5-audio-player/lib/styles.css';
 
 export default function Tray({ leaveCall }) {
   const callObject = useDaily();
+  console.log(callObject.participants())
   const { isSharingScreen, startScreenShare, stopScreenShare } =
     useScreenShare();
+  const audioPlayer = useRef(null)
+  const { bgMusic, mixedAudioTracks } = useAudioContext({ musicSource: audioPlayer })
 
   const [showMeetingInformation, setShowMeetingInformation] = useState(false);
-  const [musicPlaying] = useState(false);
 
   const localParticipant = useLocalParticipant();
   const localVideo = useVideoTrack(localParticipant?.session_id);
@@ -36,30 +37,17 @@ export default function Tray({ leaveCall }) {
   const mutedVideo = localVideo.isOff;
   const mutedAudio = localAudio.isOff;
 
-  const addAudioTrack = useCallback(async (e) => {
-    // Create audio context
-    const audioContext = new AudioContext();
-
-    // Get the microphone input
-    const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true })
-    const microphone = audioContext.createMediaStreamSource(microphoneStream)
-
-    // Get the background music
-    const audioElement = document.querySelector('#song');
-    const bgMusic = audioContext.createMediaElementSource(audioElement);
-
-    // Mix the tracks
-    const mixedOutput = audioContext.createMediaStreamDestination();
-    microphone.connect(mixedOutput)
-    bgMusic.connect(mixedOutput)
-
-    const mixedAudioTracks = mixedOutput.stream.getAudioTracks()[0]
-
-    audioElement.play()
+  const addTracksToStream = async () => {
     await callObject.setInputDevicesAsync({
       audioSource: mixedAudioTracks
     })
-  }, [callObject])
+  } 
+
+  useEffect(() => {
+    if (mixedAudioTracks) {
+      addTracksToStream()
+    }
+  }, [mixedAudioTracks])
 
   const toggleVideo = useCallback(() => {
     callObject.setLocalVideo(mutedVideo);
@@ -85,7 +73,14 @@ export default function Tray({ leaveCall }) {
   return (
     <div className="tray">
       {showMeetingInformation && <MeetingInformation />}
-      <audio id="song" src="bg_music.mp3"></audio>
+      {
+        callObject.participants().local.user_name === 'meeting host'
+          ? <AudioPlayer
+              src="bg_music.mp3"
+              ref={audioPlayer}
+            />
+          : null
+      }
       <div className="tray-buttons-container">
         <div className="controls">
           <button onClick={toggleVideo}>
@@ -95,10 +90,6 @@ export default function Tray({ leaveCall }) {
           <button onClick={toggleAudio}>
             {mutedAudio ? <MicrophoneOff /> : <MicrophoneOn />}
             {mutedAudio ? 'Unmute mic' : 'Mute mic'}
-          </button>
-          <button onClick={addAudioTrack}>
-            {musicPlaying ? <StopMusic /> : <PlayMusic />}
-            {musicPlaying ? 'Stop music' : 'Play music'}
           </button>
         </div>
         <div className="actions">
