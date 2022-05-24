@@ -11,17 +11,17 @@ export const Tray = () => {
   const { openModal } = useUIState();
   const { isActive, endBreakoutRooms, sendBreakoutMessage, broadcastMessage } = useBreakoutRoom();
   const { localParticipant } = useParticipants();
+  const userIsOwner = localParticipant.isOwner;
 
   const handleSession = () => {
     if (isActive) endBreakoutRooms();
     else openModal(BREAKOUT_ROOM_MODAL);
   }
 
-  if (!localParticipant.isOwner && isActive) return (
+  if (!userIsOwner && isActive) return (
     <TrayButton
-      label={'Breakout alert!'}
+      label={'message'}
       onClick={sendBreakoutMessage}
-      bubble
     >
       <IconBreakout />
     </TrayButton>
@@ -29,18 +29,22 @@ export const Tray = () => {
 
   return (
     <>
-      <TrayButton
-        label={isActive ? 'End' : 'Breakout'}
-        orange={isActive}
-        onClick={handleSession}>
-        <IconBreakout />
-      </TrayButton>
-      { isActive && <TrayButton
-        label={'broadcast'}
-        onClick={broadcastMessage}
-      >
-        <IconBreakout />
-      </TrayButton>}
+      { userIsOwner && (
+        <TrayButton
+          label={isActive ? 'End' : 'Breakout'}
+          orange={isActive}
+          onClick={handleSession}>
+          <IconBreakout />
+        </TrayButton>
+      )}
+      { isActive && (
+        <TrayButton
+          label={'broadcast'}
+          onClick={broadcastMessage}
+        >
+          <IconBreakout />
+        </TrayButton>
+      )}
     </>
   );
 };
