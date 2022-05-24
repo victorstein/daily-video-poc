@@ -29,32 +29,24 @@ export const BreakoutRoomProvider = ({ children }) => {
   const [breakoutRooms, setBreakoutRooms] = useState({});
 
   const handleUserTrackSubscriptions = useCallback(async () => {
-    const { room, breakoutRooms } = await getBreakoutRoomsData(roomInfo?.name);
-    setIsSessionActive(room.is_active);
+    const {isOwner} = localParticipant
 
-    if (room.is_active) {
-      callObject.setSubscribeToTracksAutomatically(false);
-      setBreakoutRooms(breakoutRooms);
-      // set capsule on the header.
-      setCustomCapsule({ variant: 'recording', label: 'Breakout Rooms' });
+    const owners = participants.filter(p => p.isOwner);
+    const ownersIds = owners.map(g => g.user_id)
+    const guests = participants.filter(p => !p.isOwner);
+    const guestsIds = guests.map(g => g.user_id)
 
-      Object.values(breakoutRooms || []).forEach(participants => {
-        const updateList = [];
-        const isLocalUserInRoom = participants.find(p => p.participant_id === localParticipant.user_id);
-        if (isLocalUserInRoom) {
-          const participantsIDs = [];
-          participants.map(p => {
-            participantsIDs.push(p.participant_id);
-            if (p.participant_id !== localParticipant.user_id)
-              updateList[p.participant_id] = { setSubscribedTracks: true }
-          });
-          setSubParticipants(participantsIDs);
-          callObject.updateParticipants(updateList);
-          return;
-        }
-      })
-    }
-  }, [callObject, localParticipant.user_id, roomInfo?.name, setCustomCapsule]);
+    setSubParticipants(isOwner ? ownersIds : guestsIds);
+    setIsSessionActive(true);
+
+    const tracksList = (isOwner ? ownersIds : guestsIds).reduce((acc, userId) => ({
+      ...acc,
+      [userId]: { setSubscribedTracks: true }
+    }), {})
+
+    callObject.setSubscribeToTracksAutomatically(false);
+    callObject.updateParticipants(tracksList);
+  }, [callObject, localParticipant, participants]);
 
   const handleEndBreakoutRooms = useCallback(() => {
     if (!callObject) return;
@@ -65,60 +57,23 @@ export const BreakoutRoomProvider = ({ children }) => {
   }, [callObject, setCustomCapsule]);
 
   const handleAppMessage = useCallback((e) => {
+    console.log('handleAppMessage', e);
     if (e?.data?.message?.type === 'breakout-rooms') handleUserTrackSubscriptions();
     if (e?.data?.message?.type === 'end-breakout-rooms') handleEndBreakoutRooms();
+    if (e?.data?.message?.type === 'breakout-alert') console.log('alright, mate?');
+    if (e?.data?.message?.type === 'broadcast') console.log('BROADCASTING STUFF!!!');
   }, [handleEndBreakoutRooms, handleUserTrackSubscriptions]);
-
-  const handleJoinedMeeting = useCallback(async () => {
-    const roomsData = await getBreakoutRoomsData(roomInfo?.name);
-
-    if (roomsData.room) {
-      setIsSessionActive(roomsData.room.is_active);
-      if (roomsData.room.is_active) {
-        const { data: participantsData } = await getRoomParticipantsByRoomId(roomsData.room.id);
-
-        // checking if rooms are full, if not adding the user to the last room.
-        let participant;
-        const size = participantsData.length/roomsData.room.max_size;
-        if (Math.ceil(size) > size) {
-          participant = {
-            participant_id: localParticipant.user_id,
-            session_id: participantsData.slice(-1).pop().session_id,
-            room_id: roomsData.room.id
-          };
-        } else {
-          participant = {
-            participant_id: localParticipant.user_id,
-            session_id: participantsData.slice(-1).pop().session_id,
-            room_id: roomsData.room.id
-          };
-        }
-        await createBreakoutRoomParticipants(participant);
-        await handleUserTrackSubscriptions();
-      }
-    }
-  }, [
-    handleUserTrackSubscriptions,
-    localParticipant.user_id,
-    roomInfo?.name
-  ]);
 
   useEffect(() => {
     if (!callObject) return;
 
-    callObject.on('joined-meeting', handleJoinedMeeting);
     callObject.on('app-message', handleAppMessage);
-    callObject.on('participant-joined', handleUserTrackSubscriptions);
     return () => {
-      callObject.off('joined-meeting', handleJoinedMeeting);
       callObject.off('app-message', handleAppMessage);
-      callObject.off('participant-joined', handleUserTrackSubscriptions);
     }
   }, [
     callObject,
     handleAppMessage,
-    handleUserTrackSubscriptions,
-    handleJoinedMeeting
   ]);
 
   const roomParticipants = useMemo(() => {
@@ -129,20 +84,6 @@ export const BreakoutRoomProvider = ({ children }) => {
   const participantCount = useMemo(() => roomParticipants.length, [roomParticipants]);
 
   const createSession = async (maxParticipants) => {
-    const participantsList = [];
-
-    setIsSessionActive(true);
-    const { data: roomData } = await createBreakoutRoom(roomInfo?.name, maxParticipants);
-
-    let rooms = [...new Array(Math.ceil(participants.length / maxParticipants))]
-      .map(() => ({ session_id: uuid(), members: participants.slice(0, maxParticipants)}));
-
-    rooms.map(r =>
-      r.members.map(p =>
-        participantsList.push({ participant_id: p.user_id, session_id: r.session_id, room_id: roomData[0].id })));
-
-    await createBreakoutRoomParticipants(participantsList);
-
     // sending the breakout-rooms event to other users.
     callObject.sendAppMessage({ message: { type: 'breakout-rooms' }}, '*');
     await handleUserTrackSubscriptions();
@@ -159,6 +100,21 @@ export const BreakoutRoomProvider = ({ children }) => {
     }
   };
 
+  const sendBreakoutAlert = async () => {
+    const breakoutRoomMates = subParticipants.filter(p => p !== localParticipant.user_id);
+    breakoutRoomMates.forEach(mate => {
+      callObject.sendAppMessage({ message: { type: 'breakout-alert' }}, mate);
+    })
+  };
+
+  const broadcastMessage = async () => {
+    const guests = participants.filter(p => !p.isOwner);
+    const guestsIds = guests.map(g => g.user_id)
+    guestsIds.forEach((guestId) => {
+      callObject.sendAppMessage({ message: { type: 'broadcast' }}, guestId);
+    })
+  };
+
   return (
     <BreakoutRoomContext.Provider
       value={{
@@ -168,6 +124,8 @@ export const BreakoutRoomProvider = ({ children }) => {
         participantCount,
         createSession,
         endSession,
+        sendBreakoutAlert,
+        broadcastMessage,
       }}
     >
       {children}

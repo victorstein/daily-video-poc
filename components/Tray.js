@@ -9,7 +9,7 @@ import { useBreakoutRoom } from './BreakoutRoomProvider';
 
 export const Tray = () => {
   const { openModal } = useUIState();
-  const { isActive, endSession } = useBreakoutRoom();
+  const { isActive, endSession, sendBreakoutAlert, broadcastMessage } = useBreakoutRoom();
   const { localParticipant } = useParticipants();
 
   const handleSession = () => {
@@ -17,16 +17,30 @@ export const Tray = () => {
     else openModal(BREAKOUT_ROOM_MODAL);
   }
 
-  if (!localParticipant.isOwner) return null;
+  if (!localParticipant.isOwner && isActive) return (
+    <TrayButton
+      label={'Breakout alert!'}
+      onClick={sendBreakoutAlert}
+      bubble
+    >
+      <IconBreakout />
+    </TrayButton>
+  );
 
   return (
     <>
       <TrayButton
-        label={isActive ? 'End': 'Breakout'}
+        label={isActive ? 'End' : 'Breakout'}
         orange={isActive}
         onClick={handleSession}>
         <IconBreakout />
       </TrayButton>
+      { isActive && <TrayButton
+        label={'broadcast'}
+        onClick={broadcastMessage}
+      >
+        <IconBreakout />
+      </TrayButton>}
     </>
   );
 };

@@ -17,9 +17,9 @@ export const BreakoutRoomModal = () => {
   const { createSession } = useBreakoutRoom();
 
   const getRoomStatus = () => {
-    if (!maxSize) return;
-    if (participants.length < 4) return <p>Cannot create breakout rooms with less than 4 members in the call.</p>;
-    if (maxSize >= participants.length) return <p>Max size should be less than total participants.</p>
+    // if (!maxSize) return;
+    // if (participants.length < 4) return <p>Cannot create breakout rooms with less than 4 members in the call.</p>;
+    // if (maxSize >= participants.length) return <p>Max size should be less than total participants.</p>
     return (
       <p>
         We have a total of {participants.length} participants in the call,
@@ -45,7 +45,7 @@ export const BreakoutRoomModal = () => {
         <Button
           key="submit"
           fullWidth
-          disabled={participants.length < 4 || maxSize >= participants.length}
+          disabled={false}
           onClick={create}>
           Create rooms
         </Button>

@@ -7,7 +7,7 @@ export const getBreakoutRoom = async (name) => {
     .select('*')
     .eq('name', name);
 
-  return { data: data?.slice(-1).pop(), error };
+  return { data: data.slice(-1).pop(), error };
 };
 
 export const getRoomParticipantsByRoomId = async (id) => {
@@ -31,10 +31,10 @@ export const getBreakoutRoomsData = async (name) => {
   return roomData;
 };
 
-export const createBreakoutRoom = async (name, maxParticipants) => {
+export const createBreakoutRoom = async (mainRoomId, name, maxParticipants) => {
   const { data, error } = await supabase
     .from('breakout')
-    .insert([{ name: name, max_size: maxParticipants }]);
+    .insert([{ main_room_id: mainRoomId, name: name, max_size: maxParticipants }]);
 
   return { data, error };
 };
