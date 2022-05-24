@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@custom/shared/*": ["./shared/*"],
+      "@custom/basic-call/*": ["./basic-call/*"]
+    }
+  }
+}

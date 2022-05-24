@@ -1,51 +1,47 @@
-# Custom React video chat app with Daily React Hooks
+# Pagination, Sorting & Track Management
 
-This is a demo of a [React app](https://create-react-app.dev/) using  Daily's call object API and the [Daily React Hooks library](https://docs.daily.co/reference/daily-react-hooks) to showcase a basic video web app:
+![Pagination](./image.png)
 
-![end-of-post](https://user-images.githubusercontent.com/12814720/167368289-04e2fd02-5e44-41bc-b1c2-e6db7922b1a1.png)
+### Live example
 
-Test a deployed version of this app at [https://custom-video-daily-react-hooks.netlify.app/](https://custom-video-daily-react-hooks.netlify.app/).
-
----
-
-## Requirements
-
-To use this demo, you will first need to [create a Daily account](https://dashboard.daily.co/signup). You will also need a Daily room URL, which you can get via two options in this demo:
-- To create new Daily rooms directly through this demo's UI, you will need your Daily API key, which can be found on the [Developers](https://dashboard.daily.co/developers) page. This will be used in your environment variables. (Instructions below.)
-- Alternatively, you can use existing Daily rooms in the demo by pasting the room URL into the input. The room URL should be in this format to be valid: `https://your-domain.daily.co/room-name`, with `daily-domain` changed to your domain, and `room-name` changed to the name of the existing room you would like to use.
+**[See it in action here ➡️](https://custom-pagination.vercel.app)**
 
 ---
 
-## Running locally
+## What does this demo do?
 
-To run this demo locally:
+- Switches to [manual track subscriptions](https://docs.daily.co/reference#%EF%B8%8F-setsubscribetotracksautomatically) to pause / resume video tracks as they are paged in and out of view
+- Introduces a new video grid component that manages pagination and sorts participant tiles based on their active speaker status
 
-1. Install dependencies `npm install`
-2. Start dev server `npm start`
-3. Then open your browser and go to `http://localhost:3000`.
+Please note: this demo is not currently mobile optimised
 
-### Creating new rooms locally
-
-To create rooms new rooms via the app UI while testing locally, follow the these additional steps:
-
-- rename `example.env` to `.env`
-- add your Daily API key (available in the Daily [dashboard](https://dashboard.daily.co/developers)) to `.env`
+### Getting started
 
 ```
-REACT_APP_DAILY_API_KEY=<-Your Daily API key here->
+# set both DAILY_API_KEY and DAILY_DOMAIN
+mv env.example .env.local
+
+yarn
+yarn workspace @custom/live-streaming dev
 ```
 
-- In `api.js`, comment out the default request and uncomment the local request.
-- Restart your server, i.e. re-run `npm start`
+Note: this example uses an additional env `MANUAL_TRACK_SUBS=1` that will disable [automatic track management](https://docs.daily.co/reference#%EF%B8%8F-setsubscribetotracksautomatically).
 
-OR...
+## How does this example work?
 
-## Deploy on Netlify
+When call sizes exceed a certain volume (~12 or more participants) it's important to start optimising for both bandwidth and CPU. Using manual track subscriptions allows each client to specify which participants they want to receive video and/or audio from, reducing how much data needs to be downloaded as well as the number of connections our servers maintain (subsequently supporting increased participant counts.)
 
-If you want access to the Daily REST API (using the proxy as specified in `netlify.toml`), you can deploy your own copy of this repo with one click via Netlify:
+This demo introduces a new paginated grid component that subscribes to any tiles that are in view. Our subscription API allows for the subscribing, pausing, resuming and unsubscribing of tracks. The grid component will:
 
-[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/daily-demos/custom-video-daily-react-hooks)
+1. Subscribe to all participants on the current and adjacent pages.
+2. Pause participants video if they are not in view (i.e. on the current page.) Pausing is optimal over unsubscribing in this particular use case since unsubscribing a track results in a full teardown of the data stream. Re-subscribing to a track is perceivably slower than pausing and resuming.
+3. Play / resume participant's video when they are on the current page.
+4. Unsubscribe from a participant's video if they are not on an adjacent page (explained below.)
 
-Note: You'll need your [Daily API key](https://dashboard.daily.co/developers) handy for this step.
+When you pause a track, you are keeping the connection for that track open and connected to the SFU but stopping any bytes from flowing across that connection. Therefore, this simple approach of pausing a track when it is offscreen rather than completely unsubscribing (and tearing down that connection) speeds up the process of showing/hiding participant videos while also cutting out the processing and bandwidth required for those tracks.
 
-Visit the deployed domain provided by Netlify after completing this step to view the app.
+It is important to note that a subscription and the underlying connections it entails does still result in some overhead and this approach breaks down once you get to even larger calls (e.g. ~50 or more depending on device, bandwidth, geolocation etc). In those scenarios it is best to take advantage of both pausing and unsubscribing to maximize both quickly showing videos and minimizing connections/processing/cpu. This example showcases how to do this by subscribing to the current page's videos (all videos resumed) as well as the adjacent pages' videos (all videos paused) and unsubscribing to any other pages' videos. This has the affect of minimizing the overall number of subscriptions while still having any video which may be displayed shortly, subscribed with their connections ready to be resumed as soon as the user pages over.
+
+## Deploy your own on Vercel
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/daily-co/clone-flow?repository-url=https%3A%2F%2Fgithub.com%2Fdaily-demos%2Fexamples.git&env=DAILY_DOMAIN%2CDAILY_API_KEY&envDescription=Your%20Daily%20domain%20and%20API%20key%20can%20be%20found%20on%20your%20account%20dashboard&envLink=https%3A%2F%2Fdashboard.daily.co&project-name=daily-examples&repo-name=daily-examples)
