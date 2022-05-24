@@ -1,42 +1,33 @@
 {
-  "name": "call-object-react-with-hooks",
+  "name": "@custom/breakout-rooms",
+  "description": "Basic Call + Breakout Rooms",
   "version": "0.1.0",
   "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
   "dependencies": {
-    "@daily-co/daily-js": "^0.22.0",
-    "@daily-co/daily-react-hooks": "^0.1.1",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-h5-audio-player": "^3.8.4",
-    "react-scripts": "5.0.0",
-    "recoil": "^0.5.2"
+    "@daily-co/daily-js": "0.21.0",
+    "@supabase/supabase-js": "^1.29.2",
+    "bowser": "^2.11.0",
+    "classnames": "^2.3.1",
+    "debounce": "^1.2.1",
+    "fast-deep-equal": "^3.1.3",
+    "nanoid": "^3.1.23",
+    "next": "^12.1.6",
+    "no-scroll": "^2.1.1",
+    "pluralize": "^8.0.0",
+    "prop-types": "^15.7.2",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-portal": "^4.2.1",
+    "shallow-equal": "^1.2.1",
+    "use-deep-compare": "^1.1.0"
   },
   "devDependencies": {
-    "eslint-config-prettier": "^8.5.0",
-    "prettier": "^2.6.2"
-  },
-  "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "netlify-build": "sed -i.bak s/REACT_APP_DAILY_API_KEY_PLACEHOLDER/${REACT_APP_DAILY_API_KEY}/g netlify.toml && npm run build",
-    "eject": "react-scripts eject"
-  },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "prettier"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "babel-plugin-inline-react-svg": "^2.0.1"
   }
 }
