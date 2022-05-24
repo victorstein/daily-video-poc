@@ -8,14 +8,7 @@ import React, {
 import { useCallState } from '@custom/shared/contexts/CallProvider';
 import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useUIState } from '@custom/shared/contexts/UIStateProvider';
-import { uuid } from '@supabase/supabase-js/dist/main/lib/helpers';
 import PropTypes from 'prop-types';
-import {
-  createBreakoutRoom,
-  createBreakoutRoomParticipants, endBreakoutRoom, getBreakoutRoom,
-  getBreakoutRoomsData,
-  getRoomParticipantsByRoomId,
-} from '../utils/lib';
 
 export const BreakoutRoomContext = createContext();
 
