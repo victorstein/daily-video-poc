@@ -1,4 +1,4 @@
-import React, { useState, forwardRef } from 'react';
+import React, { forwardRef } from 'react';
 import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import theme from '../../styles/defaultTheme';
@@ -154,23 +154,39 @@ TextInput.propTypes = {
   variant: PropTypes.string,
 };
 
+export const NumberInput = forwardRef(
+  ({ onChange, prefix, variant, ...rest }, ref) => {
+    const cx = classNames('input-container', variant, { prefix });
+
+    return (
+      <InputContainer className={cx} prefix={prefix}>
+        <input type="number" onChange={onChange} ref={ref} {...rest} />
+      </InputContainer>
+    );
+  }
+);
+
+NumberInput.propTypes = {
+  onChange: PropTypes.func,
+  prefix: PropTypes.string,
+  variant: PropTypes.string,
+};
+
 export const BooleanInput = ({
   value = false,
   onChange = () => null,
   disabled = false,
   ...rest
 }) => {
-  const [checked, setChecked] = useState(value);
 
   return (
     // eslint-disable-next-line
     <label disabled={disabled}>
       <input
         type="checkbox"
-        checked={checked}
+        checked={value}
         disabled={disabled}
         onChange={(e) => {
-          setChecked(!checked);
           onChange(e);
         }}
         {...rest}

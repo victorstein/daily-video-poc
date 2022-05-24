@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Button from '@custom/shared/components/Button';
 import { CardBody } from '@custom/shared/components/Card';
 import Field from '@custom/shared/components/Field';
-import { TextInput } from '@custom/shared/components/Input';
+import { NumberInput, BooleanInput } from '@custom/shared/components/Input';
 import Modal from '@custom/shared/components/Modal';
 import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useUIState } from '@custom/shared/contexts/UIStateProvider';
@@ -11,27 +11,55 @@ import { useBreakoutRoom } from './BreakoutRoomProvider';
 export const BREAKOUT_ROOM_MODAL = 'breakout-room';
 
 export const BreakoutRoomModal = () => {
+  const [ isCreatingRooms, setIsCreatingRooms ] = useState(false)
   const { currentModals, closeModal } = useUIState();
   const { participants } = useParticipants();
-  const [maxSize, setMaxSize] = useState(2);
-  const { createSession } = useBreakoutRoom();
+  const [roomsCount, setRoomsCount] = useState(1);
+  const { createBreakoutRooms } = useBreakoutRoom();
+  const [breakoutRoomInput, setBreakoutRoomInput] = useState({ 0: {} });
 
-  const getRoomStatus = () => {
-    // if (!maxSize) return;
-    // if (participants.length < 4) return <p>Cannot create breakout rooms with less than 4 members in the call.</p>;
-    // if (maxSize >= participants.length) return <p>Max size should be less than total participants.</p>
+  useEffect(() => {
+    Array(roomsCount).fill(1).forEach((_, index) => {
+      breakoutRoomInput[index] = breakoutRoomInput[index] || {}
+    })
+  }, [roomsCount, breakoutRoomInput])
+
+  const create = async () => {
+    try {
+      setIsCreatingRooms(true);
+      await createBreakoutRooms(breakoutRoomInput);
+      closeModal(BREAKOUT_ROOM_MODAL);
+    } catch (error) {
+      alert(error.message);
+    } finally {
+      setIsCreatingRooms(false);
+    }
+  };
+
+  const renderParticipantOption = (participant, roomIndex) => {
     return (
-      <p>
-        We have a total of {participants.length} participants in the call,
-        we will create <b>{Math.ceil(participants.length/maxSize)} rooms</b> with <b>{maxSize} participants</b> per room.
-      </p>
+      <span key={participant.user_id}>
+        <span style={{ display: 'inline-block', marginRight: 5 }}>{participant.name}</span>
+
+        <BooleanInput value={breakoutRoomInput[roomIndex]?.[participant.user_id]} disabled={isCreatingRooms} onChange={(e) => {
+          const isParticipantSelected = e.target.checked
+
+          // loop through all rooms and either add or remove participant
+          for (const key in breakoutRoomInput) {
+            if (key === roomIndex.toString() && isParticipantSelected) {
+              // addParticipantToRoom
+              breakoutRoomInput[key] = breakoutRoomInput[key] || {}
+              breakoutRoomInput[key][participant.user_id] = isParticipantSelected;
+            } else if (breakoutRoomInput[key]?.[participant.user_id]) {
+              // removeParticipantFromRoom
+              delete breakoutRoomInput[key][participant.user_id];
+            }
+          }
+          setBreakoutRoomInput(() => JSON.parse(JSON.stringify(breakoutRoomInput)));
+        }} />
+      </span>
     )
   }
-
-  const create = () => {
-    createSession(maxSize);
-    closeModal(BREAKOUT_ROOM_MODAL);
-  };
 
   return (
     <Modal
@@ -39,28 +67,45 @@ export const BreakoutRoomModal = () => {
       isOpen={currentModals[BREAKOUT_ROOM_MODAL]}
       onClose={() => closeModal(BREAKOUT_ROOM_MODAL)}
       actions={[
-        <Button key="close" fullWidth variant="outline">
+        <Button key="close" fullWidth variant="outline" disabled={isCreatingRooms}>
           Close
         </Button>,
         <Button
           key="submit"
           fullWidth
-          disabled={false}
+          disabled={participants.length < 2 || isCreatingRooms}
           onClick={create}>
           Create rooms
         </Button>
       ]}
     >
       <CardBody>
-        {getRoomStatus()}
-        <Field label="Enter max size of a room">
-          <TextInput
-            placeholder="Max Size"
-            required
-            value={maxSize}
-            onChange={(e) => setMaxSize(e.target.value)}
-          />
-        </Field>
+        { isCreatingRooms ? 'Creating Rooms...' : (<>
+          <Field label="How many rooms?">
+            <NumberInput
+              placeholder="number of rooms"
+              required
+              value={roomsCount}
+              onChange={(e) => setRoomsCount(+e.target.value)}
+              min={1}
+              max={participants.length}
+            />
+          </Field>
+
+          {Array(roomsCount).fill(1).map((_, roomIndex) => (
+            <Field label={`Participants of Room #${roomIndex +1}`} key={roomIndex}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'start',
+                gap: '15px',
+              }}>
+                {participants.map((participant) => (
+                  renderParticipantOption(participant, roomIndex)
+                ))}
+              </div>
+            </Field>
+          ))}
+        </>)}
       </CardBody>
     </Modal>
   );

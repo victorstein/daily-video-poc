@@ -108,6 +108,13 @@ export const BreakoutRoomProvider = ({ children }) => {
     })
   };
 
+  const createBreakoutRooms = async (input) => {
+    console.log('createBreakoutRooms', input);
+    return new Promise((resolve) => {
+      setTimeout(resolve, 2000);
+    })
+  }
+
   return (
     <BreakoutRoomContext.Provider
       value={{
@@ -119,6 +126,7 @@ export const BreakoutRoomProvider = ({ children }) => {
         endSession,
         sendBreakoutAlert,
         broadcastMessage,
+        createBreakoutRooms,
       }}
     >
       {children}
