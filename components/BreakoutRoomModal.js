@@ -28,7 +28,8 @@ export const BreakoutRoomModal = () => {
   const create = async () => {
     try {
       setIsCreatingRooms(true);
-      await createBreakoutRooms({ breakoutRoomsInput, breakoutRoomByUser });
+      const unassignedUsersIds = participants.map(p => p.user_id).filter(id => breakoutRoomByUser[id] === undefined);
+      await createBreakoutRooms({ breakoutRoomsInput, breakoutRoomByUser, unassignedUsersIds });
       closeModal(BREAKOUT_ROOM_MODAL);
     } catch (error) {
       alert(error.message);

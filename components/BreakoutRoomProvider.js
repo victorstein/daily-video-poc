@@ -50,11 +50,14 @@ export const BreakoutRoomProvider = ({ children }) => {
   const handleCreateBreakoutRooms = async (message) => {
     console.info('handleCreateBreakoutRooms', message);
 
+    setIsSessionActive(true);
+
     const { payload } = message;
-    const { breakoutRoomByUser, breakoutRoomsInput } = payload;
+    const { breakoutRoomByUser, breakoutRoomsInput, unassignedUsersIds } = payload;
     const { user_id: userId } = localParticipant;
     const assignedBreakoutRoom = breakoutRoomByUser[userId];
-    const roomMatesIds = Object.keys(breakoutRoomsInput[assignedBreakoutRoom] || {})
+    const userIsUnassigned = unassignedUsersIds.includes(userId);
+    const roomMatesIds = userIsUnassigned ? unassignedUsersIds : Object.keys(breakoutRoomsInput[assignedBreakoutRoom] || {});
 
     const tracksList = roomMatesIds.reduce((acc, userId) => ({
       ...acc,
@@ -62,7 +65,7 @@ export const BreakoutRoomProvider = ({ children }) => {
     }), {})
 
     setSubParticipants(roomMatesIds);
-    setIsSessionActive(true);
+
     callObject.setSubscribeToTracksAutomatically(false);
     callObject.updateParticipants(tracksList);
   }
