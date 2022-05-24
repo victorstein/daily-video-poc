@@ -8,7 +8,7 @@ import { useCallState } from '@custom/shared/contexts/CallProvider';
 import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useUIState } from '@custom/shared/contexts/UIStateProvider';
 import PropTypes from 'prop-types';
-import { sleep } from 'utils/sleep';
+import toast from 'react-simple-toasts';
 
 export const BreakoutRoomContext = createContext();
 
@@ -93,6 +93,8 @@ export const BreakoutRoomProvider = ({ children }) => {
 
   const handleBroadcast = async (e) => {
     console.log('handleBroadcast', e);
+
+    toast('Broadcast message sent', 3000);
   }
 
   const endBreakoutRooms = async () => {
