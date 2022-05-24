@@ -16,19 +16,19 @@ export const BreakoutRoomModal = () => {
   const { participants } = useParticipants();
   const [ roomsCount, setRoomsCount ] = useState(1);
   const { createBreakoutRooms } = useBreakoutRoom();
-  const [ breakoutRoomInput, setBreakoutRoomInput ] = useState({ 0: {} });
+  const [ breakoutRoomsInput, setBreakoutRoomInput ] = useState({ 0: {} });
   const [ breakoutRoomByUser, setBreakoutRoomByUser ] = useState({});
 
   useEffect(() => {
     Array(roomsCount).fill(1).forEach((_, index) => {
-      breakoutRoomInput[index] = breakoutRoomInput[index] || {}
+      breakoutRoomsInput[index] = breakoutRoomsInput[index] || {}
     })
-  }, [roomsCount, breakoutRoomInput])
+  }, [roomsCount, breakoutRoomsInput])
 
   const create = async () => {
     try {
       setIsCreatingRooms(true);
-      await createBreakoutRooms({ breakoutRoomInput, breakoutRoomByUser });
+      await createBreakoutRooms({ breakoutRoomsInput, breakoutRoomByUser });
       closeModal(BREAKOUT_ROOM_MODAL);
     } catch (error) {
       alert(error.message);
@@ -41,18 +41,18 @@ export const BreakoutRoomModal = () => {
     const isParticipantSelected = e.target.checked
 
     // loop through all rooms and either add or remove participant
-    for (const key in breakoutRoomInput) {
+    for (const key in breakoutRoomsInput) {
       if (key === roomIndex.toString() && isParticipantSelected) {
         // addParticipantToRoom
-        breakoutRoomInput[key] = breakoutRoomInput[key] || {}
-        breakoutRoomInput[key][participant.user_id] = isParticipantSelected;
-      } else if (breakoutRoomInput[key]?.[participant.user_id]) {
+        breakoutRoomsInput[key] = breakoutRoomsInput[key] || {}
+        breakoutRoomsInput[key][participant.user_id] = isParticipantSelected;
+      } else if (breakoutRoomsInput[key]?.[participant.user_id]) {
         // removeParticipantFromRoom
-        delete breakoutRoomInput[key][participant.user_id];
+        delete breakoutRoomsInput[key][participant.user_id];
       }
     }
 
-    setBreakoutRoomInput(() => JSON.parse(JSON.stringify(breakoutRoomInput)));
+    setBreakoutRoomInput(() => JSON.parse(JSON.stringify(breakoutRoomsInput)));
     setBreakoutRoomByUser(prev => ({
       ...prev,
       [participant.user_id]: isParticipantSelected ? roomIndex : null
@@ -60,7 +60,7 @@ export const BreakoutRoomModal = () => {
   }
 
   const renderParticipantOption = (participant, roomIndex) => {
-    const isUserInRoom = Boolean(breakoutRoomInput[roomIndex]?.[participant.user_id])
+    const isUserInRoom = Boolean(breakoutRoomsInput[roomIndex]?.[participant.user_id])
     return (
       <span key={participant.user_id}>
         <span style={{ display: 'inline-block', marginRight: 5 }}>{participant.name}</span>

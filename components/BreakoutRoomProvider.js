@@ -34,7 +34,7 @@ export const BreakoutRoomProvider = ({ children }) => {
 
   const createBreakoutRooms = async (input) => {
     // just faking an async action
-    await sleep(2000)
+    // await sleep(2000)
 
     const messageInput = {
       type: 'create-breakout-rooms',
@@ -47,26 +47,24 @@ export const BreakoutRoomProvider = ({ children }) => {
     handleCreateBreakoutRooms(messageInput);
   }
 
-  const handleCreateBreakoutRooms = async (e) => {
-    console.info('handleCreateBreakoutRooms', e);
+  const handleCreateBreakoutRooms = async (message) => {
+    console.info('handleCreateBreakoutRooms', message);
 
-    // const {isOwner} = localParticipant
+    const { payload } = message;
+    const { breakoutRoomByUser, breakoutRoomsInput } = payload;
+    const { user_id: userId } = localParticipant;
+    const assignedBreakoutRoom = breakoutRoomByUser[userId];
+    const roomMatesIds = Object.keys(breakoutRoomsInput[assignedBreakoutRoom] || {})
 
-    // const owners = participants.filter(p => p.isOwner);
-    // const ownersIds = owners.map(g => g.user_id)
-    // const guests = participants.filter(p => !p.isOwner);
-    // const guestsIds = guests.map(g => g.user_id)
+    const tracksList = roomMatesIds.reduce((acc, userId) => ({
+      ...acc,
+      [userId]: { setSubscribedTracks: true }
+    }), {})
 
-    // setSubParticipants(isOwner ? ownersIds : guestsIds);
-    // setIsSessionActive(true);
-
-    // const tracksList = (isOwner ? ownersIds : guestsIds).reduce((acc, userId) => ({
-    //   ...acc,
-    //   [userId]: { setSubscribedTracks: true }
-    // }), {})
-
-    // callObject.setSubscribeToTracksAutomatically(false);
-    // callObject.updateParticipants(tracksList);
+    setSubParticipants(roomMatesIds);
+    setIsSessionActive(true);
+    callObject.setSubscribeToTracksAutomatically(false);
+    callObject.updateParticipants(tracksList);
   }
 
   const sendBreakoutMessage = async () => {
@@ -95,18 +93,13 @@ export const BreakoutRoomProvider = ({ children }) => {
   }
 
   const endBreakoutRooms = async () => {
-    console.log('endBreakoutRooms');
-    // setIsSessionActive(false);
-
-    // const { data: room } = await getBreakoutRoom(roomInfo?.name);
-    // if (room.is_active) {
-    //   await endBreakoutRoom(room.id);
-    //   callObject.sendAppMessage(buildMessage({ type: 'end-breakout-rooms' }), '*');
-    //   handleEndBreakoutRooms();
-    // }
+    callObject.sendAppMessage(buildMessage({ type: 'end-breakout-rooms' }), '*');
+    handleEndBreakoutRooms();
   };
 
-  const handleEndBreakoutRooms = () => {
+  const handleEndBreakoutRooms = (message) => {
+    console.info('handleEndBreakoutRooms', message);
+
     setIsSessionActive(false);
     setCustomCapsule();
     callObject.setSubscribeToTracksAutomatically(true);
@@ -120,6 +113,7 @@ export const BreakoutRoomProvider = ({ children }) => {
       'create-breakout-rooms': handleCreateBreakoutRooms,
       'breakout-message': handleBreakoutMessage,
       'broadcast': handleBroadcast,
+      'end-breakout-rooms': handleEndBreakoutRooms,
     }
 
     const eventType = e.data.message.type;
