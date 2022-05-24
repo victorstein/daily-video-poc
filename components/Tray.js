@@ -9,18 +9,18 @@ import { useBreakoutRoom } from './BreakoutRoomProvider';
 
 export const Tray = () => {
   const { openModal } = useUIState();
-  const { isActive, endSession, sendBreakoutAlert, broadcastMessage } = useBreakoutRoom();
+  const { isActive, endBreakoutRooms, sendBreakoutMessage, broadcastMessage } = useBreakoutRoom();
   const { localParticipant } = useParticipants();
 
   const handleSession = () => {
-    if (isActive) endSession();
+    if (isActive) endBreakoutRooms();
     else openModal(BREAKOUT_ROOM_MODAL);
   }
 
   if (!localParticipant.isOwner && isActive) return (
     <TrayButton
       label={'Breakout alert!'}
-      onClick={sendBreakoutAlert}
+      onClick={sendBreakoutMessage}
       bubble
     >
       <IconBreakout />

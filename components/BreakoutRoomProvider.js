@@ -1,6 +1,5 @@
 import React, {
   createContext,
-  useCallback,
   useContext,
   useEffect, useMemo,
   useState
@@ -9,8 +8,13 @@ import { useCallState } from '@custom/shared/contexts/CallProvider';
 import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useUIState } from '@custom/shared/contexts/UIStateProvider';
 import PropTypes from 'prop-types';
+import { sleep } from 'utils/sleep';
 
 export const BreakoutRoomContext = createContext();
+
+const buildMessage = (input) => {
+  return { message: input };
+}
 
 export const BreakoutRoomProvider = ({ children }) => {
   const { callObject, roomInfo } = useCallState();
@@ -21,42 +25,115 @@ export const BreakoutRoomProvider = ({ children }) => {
   const [subParticipants, setSubParticipants] = useState([]);
   const [breakoutRooms, setBreakoutRooms] = useState({});
 
-  const handleUserTrackSubscriptions = useCallback(async () => {
-    const {isOwner} = localParticipant
+  const roomParticipants = useMemo(() => {
+    if (!isSessionActive) return participants
+    return participants.filter(p => subParticipants.includes(p.user_id));
+  }, [isSessionActive, participants, subParticipants]);
 
-    const owners = participants.filter(p => p.isOwner);
-    const ownersIds = owners.map(g => g.user_id)
+  const participantCount = useMemo(() => roomParticipants.length, [roomParticipants]);
+
+  const createBreakoutRooms = async (input) => {
+    // just faking an async action
+    await sleep(2000)
+
+    const messageInput = {
+      type: 'create-breakout-rooms',
+      payload: input,
+    }
+
+    callObject.sendAppMessage(buildMessage(messageInput), '*');
+
+    // this is necessary because the user publishing the message also needs to handle it
+    handleCreateBreakoutRooms(messageInput);
+  }
+
+  const handleCreateBreakoutRooms = async (e) => {
+    console.info('handleCreateBreakoutRooms', e);
+
+    // const {isOwner} = localParticipant
+
+    // const owners = participants.filter(p => p.isOwner);
+    // const ownersIds = owners.map(g => g.user_id)
+    // const guests = participants.filter(p => !p.isOwner);
+    // const guestsIds = guests.map(g => g.user_id)
+
+    // setSubParticipants(isOwner ? ownersIds : guestsIds);
+    // setIsSessionActive(true);
+
+    // const tracksList = (isOwner ? ownersIds : guestsIds).reduce((acc, userId) => ({
+    //   ...acc,
+    //   [userId]: { setSubscribedTracks: true }
+    // }), {})
+
+    // callObject.setSubscribeToTracksAutomatically(false);
+    // callObject.updateParticipants(tracksList);
+  }
+
+  const sendBreakoutMessage = async () => {
+    const breakoutRoomMates = subParticipants.filter(p => p !== localParticipant.user_id);
+    breakoutRoomMates.forEach(mate => {
+      callObject.sendAppMessage(buildMessage({ type: 'breakout-message' }), mate);
+    })
+
+    handleBreakoutMessage();
+  };
+  
+  const handleBreakoutMessage = async (e) => {
+    console.log('handleBreakoutMessage', e);
+  }
+
+  const broadcastMessage = async () => {
     const guests = participants.filter(p => !p.isOwner);
     const guestsIds = guests.map(g => g.user_id)
+    guestsIds.forEach((guestId) => {
+      callObject.sendAppMessage(buildMessage({ type: 'broadcast' }), guestId);
+    })
+  };
 
-    setSubParticipants(isOwner ? ownersIds : guestsIds);
-    setIsSessionActive(true);
+  const handleBroadcast = async (e) => {
+    console.log('handleBroadcast', e);
+  }
 
-    const tracksList = (isOwner ? ownersIds : guestsIds).reduce((acc, userId) => ({
-      ...acc,
-      [userId]: { setSubscribedTracks: true }
-    }), {})
+  const endBreakoutRooms = async () => {
+    console.log('endBreakoutRooms');
+    // setIsSessionActive(false);
 
-    callObject.setSubscribeToTracksAutomatically(false);
-    callObject.updateParticipants(tracksList);
-  }, [callObject, localParticipant, participants]);
+    // const { data: room } = await getBreakoutRoom(roomInfo?.name);
+    // if (room.is_active) {
+    //   await endBreakoutRoom(room.id);
+    //   callObject.sendAppMessage(buildMessage({ type: 'end-breakout-rooms' }), '*');
+    //   handleEndBreakoutRooms();
+    // }
+  };
 
-  const handleEndBreakoutRooms = useCallback(() => {
-    if (!callObject) return;
-
+  const handleEndBreakoutRooms = () => {
     setIsSessionActive(false);
     setCustomCapsule();
     callObject.setSubscribeToTracksAutomatically(true);
-  }, [callObject, setCustomCapsule]);
+  };
 
-  const handleAppMessage = useCallback((e) => {
-    console.log('handleAppMessage', e);
-    if (e?.data?.message?.type === 'breakout-rooms') handleUserTrackSubscriptions();
-    if (e?.data?.message?.type === 'end-breakout-rooms') handleEndBreakoutRooms();
-    if (e?.data?.message?.type === 'breakout-alert') console.log('alright, mate?');
-    if (e?.data?.message?.type === 'broadcast') console.log('BROADCASTING STUFF!!!');
-  }, [handleEndBreakoutRooms, handleUserTrackSubscriptions]);
+  // map app messages to appropriate handlers
+  const handleAppMessage = async (e) => {
+    console.info('handleAppMessage', e);
 
+    const handlers = {
+      'create-breakout-rooms': handleCreateBreakoutRooms,
+      'breakout-message': handleBreakoutMessage,
+      'broadcast': handleBroadcast,
+    }
+
+    const eventType = e.data.message.type;
+    const handler = handlers[eventType];
+    if (!handler) {
+      console.warn(`No handler for ${eventType}`);
+      return;
+    }
+
+    await handler(e.data.message)
+    setCustomCapsule()
+  };
+
+  // subscribe to events on the call object
   useEffect(() => {
     if (!callObject) return;
 
@@ -69,52 +146,6 @@ export const BreakoutRoomProvider = ({ children }) => {
     handleAppMessage,
   ]);
 
-  const roomParticipants = useMemo(() => {
-    if (!isSessionActive) return participants
-    return participants.filter(p => subParticipants.includes(p.user_id));
-  }, [isSessionActive, participants, subParticipants]);
-
-  const participantCount = useMemo(() => roomParticipants.length, [roomParticipants]);
-
-  const createSession = async (maxParticipants) => {
-    // sending the breakout-rooms event to other users.
-    callObject.sendAppMessage({ message: { type: 'breakout-rooms' }}, '*');
-    await handleUserTrackSubscriptions();
-  };
-
-  const endSession = async () => {
-    setIsSessionActive(false);
-
-    const { data: room } = await getBreakoutRoom(roomInfo?.name);
-    if (room.is_active) {
-      await endBreakoutRoom(room.id);
-      callObject.sendAppMessage({ message: { type: 'end-breakout-rooms' }}, '*');
-      handleEndBreakoutRooms();
-    }
-  };
-
-  const sendBreakoutAlert = async () => {
-    const breakoutRoomMates = subParticipants.filter(p => p !== localParticipant.user_id);
-    breakoutRoomMates.forEach(mate => {
-      callObject.sendAppMessage({ message: { type: 'breakout-alert' }}, mate);
-    })
-  };
-
-  const broadcastMessage = async () => {
-    const guests = participants.filter(p => !p.isOwner);
-    const guestsIds = guests.map(g => g.user_id)
-    guestsIds.forEach((guestId) => {
-      callObject.sendAppMessage({ message: { type: 'broadcast' }}, guestId);
-    })
-  };
-
-  const createBreakoutRooms = async (input) => {
-    console.log('createBreakoutRooms', input);
-    return new Promise((resolve) => {
-      setTimeout(resolve, 2000);
-    })
-  }
-
   return (
     <BreakoutRoomContext.Provider
       value={{
@@ -122,9 +153,8 @@ export const BreakoutRoomProvider = ({ children }) => {
         breakoutRooms,
         participants: roomParticipants,
         participantCount,
-        createSession,
-        endSession,
-        sendBreakoutAlert,
+        endBreakoutRooms,
+        sendBreakoutMessage,
         broadcastMessage,
         createBreakoutRooms,
       }}
