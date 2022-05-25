@@ -13,7 +13,7 @@ export const useBackgroundMusic = (musicSource, micSource) => {
 
   const getBackgroundMusic = () => {
     const bgMusic = audioContext.createMediaElementSource(musicSource)
-    // bgMusic.connect(audioContext.destination)
+    bgMusic.connect(audioContext.destination)
     return bgMusic
   }
 
