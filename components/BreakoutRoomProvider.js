@@ -9,6 +9,7 @@ import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useUIState } from '@custom/shared/contexts/UIStateProvider';
 import PropTypes from 'prop-types';
 import toast from 'react-simple-toasts';
+import { sleep } from 'utils/sleep';
 
 export const BreakoutRoomContext = createContext();
 
@@ -34,7 +35,7 @@ export const BreakoutRoomProvider = ({ children }) => {
 
   const createBreakoutRooms = async (input) => {
     // just faking an async action
-    // await sleep(2000)
+    await sleep(2000)
 
     const messageInput = {
       type: 'create-breakout-rooms',
@@ -58,7 +59,6 @@ export const BreakoutRoomProvider = ({ children }) => {
     const assignedBreakoutRoom = breakoutRoomByUser[userId];
     const userIsUnassigned = unassignedUsersIds.includes(userId);
     const roomMatesIds = userIsUnassigned ? unassignedUsersIds : Object.keys(breakoutRoomsInput[assignedBreakoutRoom] || {});
-
     const tracksList = roomMatesIds.reduce((acc, userId) => ({
       ...acc,
       [userId]: { setSubscribedTracks: true }
@@ -68,6 +68,8 @@ export const BreakoutRoomProvider = ({ children }) => {
 
     callObject.setSubscribeToTracksAutomatically(false);
     callObject.updateParticipants(tracksList);
+
+    setCustomCapsule()
   }
 
   const sendBreakoutMessage = async () => {
@@ -94,7 +96,7 @@ export const BreakoutRoomProvider = ({ children }) => {
   const handleBroadcast = async (e) => {
     console.log('handleBroadcast', e);
 
-    toast('Broadcast message sent', 3000);
+    toast('Broadcast message sent', 10000);
   }
 
   const endBreakoutRooms = async () => {
@@ -129,7 +131,6 @@ export const BreakoutRoomProvider = ({ children }) => {
     }
 
     await handler(e.data.message)
-    setCustomCapsule()
   };
 
   // subscribe to events on the call object
