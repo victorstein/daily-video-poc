@@ -1,1 +1,1 @@
-export { TextInput, BooleanInput, SelectInput } from './Input';
+export { TextInput, BooleanInput, SelectInput, NumberInput } from './Input';

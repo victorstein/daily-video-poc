@@ -55,12 +55,12 @@ export const Intro = ({
         </Field>
         {!forceFetchToken && (
           <Field label="Fetch meeting token">
-            <BooleanInput onChange={(e) => setFetchToken(e.target.checked)} />
+            <BooleanInput value={fetchToken} onChange={(e) => setFetchToken(e.target.checked)} />
           </Field>
         )}
         {fetchToken && !forceOwner && (
           <Field label="Join as owner">
-            <BooleanInput onChange={(e) => setOwner(e.target.checked)} />
+            <BooleanInput value={owner} onChange={(e) => setOwner(e.target.checked)} />
           </Field>
         )}
       </CardBody>
