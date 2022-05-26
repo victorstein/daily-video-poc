@@ -1,95 +1,79 @@
 import React, {
   createContext,
-  useCallback,
   useContext,
   useEffect,
   useState,
 } from 'react';
 import { useCallState } from '@custom/shared/contexts/CallProvider';
-import { useSharedState } from '@custom/shared/hooks/useSharedState';
-import { nanoid } from 'nanoid';
 import PropTypes from 'prop-types';
 
 export const ChatContext = createContext();
-
+// { message, room, recipientsIds }
 export const ChatProvider = ({ children }) => {
   const { callObject } = useCallState();
-  const { sharedState, setSharedState } = useSharedState({
-    initialValues: {
-      chatHistory: [],
-    },
-    broadcast: false,
-  });
-  const [hasNewMessages, setHasNewMessages] = useState(false);
+  const [ chatHistoryByRoom, setChatHistoryByRoom ] = useState({});
 
-  const handleNewMessage = useCallback(
-    (e) => {
-      if (e?.data?.message?.type) return;
-      const participants = callObject.participants();
-      const sender = participants[e.fromId].user_name
-        ? participants[e.fromId].user_name
-        : 'Guest';
+  const sendChatMessage = (input) => {
+    if (!callObject) return;
 
-      setSharedState(values => ({
-        ...values,
-        chatHistory: [
-          ...values.chatHistory,
-          // nanoid - we use it to generate unique ID string
-          { sender, senderID: e.fromId, message: e.data.message, id: nanoid() },
-        ]
-      }));
+    const messageInput = {
+      type: 'chat-message',
+      payload: input,
+    }
 
-      setHasNewMessages(true);
-    },
-    [callObject, setSharedState]
-  );
+    handleChatMessage(messageInput);
 
+    input.recipientsIds.forEach(id => {
+      callObject.sendAppMessage({ message: messageInput }, id);
+    })
+  }
 
-  const sendMessage = useCallback(
-    (message) => {
-      if (!callObject) return;
+  const handleChatMessage = ({ payload }) => {
+    console.log('handleChatMessage', payload);
+    const { id, senderID, senderName, message, room } = payload
 
-      console.log('💬 Sending app message');
+    setChatHistoryByRoom(prevState => ({
+      ...prevState,
+      [room]: [
+        ...(prevState[room] || []),
+        { id, senderName, senderID, message }
+      ],
+    }))
+  }
 
-      callObject.sendAppMessage({ message }, '*');
+  // map app messages to appropriate handlers
+  const handleAppMessage = async (e) => {
+    console.info('handleAppMessage', e);
 
-      const participants = callObject.participants();
-      // Get the sender (local participant) name
-      const sender = participants.local.user_name
-        ? participants.local.user_name
-        : 'Guest';
-      const senderID = participants.local.user_id;
+    const handlers = {
+      'chat-message': handleChatMessage,
+    }
 
-      // Update shared state chat history
-      return setSharedState(values => ({
-        ...values,
-        chatHistory: [
-          ...values.chatHistory,
-          // nanoid - we use it to generate unique ID string
-          { sender, senderID, message, id: nanoid() }
-        ]
-      }));
-    },
-    [callObject, setSharedState]
-  );
+    const eventType = e.data.message.type;
+    const handler = handlers[eventType];
+    if (!handler) {
+      console.warn(`No handler for ${eventType}`);
+      return;
+    }
+
+    await handler(e.data.message)
+  };
 
   useEffect(() => {
     if (!callObject) return;
 
     console.log(`💬 Chat provider listening for app messages`);
 
-    callObject.on('app-message', handleNewMessage);
+    callObject.on('app-message', handleAppMessage);
 
-    return () => callObject.off('app-message', handleNewMessage);
-  }, [callObject, handleNewMessage]);
+    return () => callObject.off('app-message', handleAppMessage);
+  }, [callObject, handleAppMessage]);
 
   return (
     <ChatContext.Provider
       value={{
-        sendMessage,
-        chatHistory: sharedState.chatHistory,
-        hasNewMessages,
-        setHasNewMessages,
+        sendChatMessage,
+        chatHistoryByRoom,
       }}
     >
       {children}

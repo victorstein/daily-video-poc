@@ -4,43 +4,44 @@ import Button from '@custom/shared/components/Button';
 import { TextInput } from '@custom/shared/components/Input';
 import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useUIState } from '@custom/shared/contexts/UIStateProvider';
-import { useMessageSound } from '@custom/shared/hooks/useMessageSound';
 import { useChat } from '@custom/shared/contexts/ChatProvider';
+import { nanoid } from 'nanoid';
+import { useBreakoutRoom } from 'components/BreakoutRoomProvider';
 
 export const CHAT_ASIDE = 'chat';
 
 export const ChatAside = () => {
   const { showAside, setShowAside } = useUIState();
-  const { sendMessage, chatHistory, hasNewMessages, setHasNewMessages } =
-    useChat();
+  const { sendChatMessage, chatHistoryByRoom } = useChat();
   const { localParticipant } = useParticipants();
-  const [newMessage, setNewMessage] = useState('');
-  const playMessageSound = useMessageSound();
-
+  const [ currentRoom, setCurrentRoom ] = useState('main');
+  const [ newMessage, setNewMessage ] = useState('');
+  const { breakoutRoomsMap, breakoutRoomByUser, unassignedUsersIds } = useBreakoutRoom() // ideally this would come from a sharedState context of some sort
   const chatWindowRef = useRef();
 
   useEffect(() => {
-    // Clear out any new message notifications if we're showing the chat screen
-    if (showAside === CHAT_ASIDE) {
-      setHasNewMessages(false);
-    }
-  }, [showAside, chatHistory.length, setHasNewMessages]);
-
-  useEffect(() => {
-    if (hasNewMessages && showAside !== CHAT_ASIDE) {
-      playMessageSound();
-    }
-  }, [playMessageSound, showAside, hasNewMessages]);
+    setCurrentRoom(breakoutRoomByUser[localParticipant.user_id] ?? 'main');
+  }, [breakoutRoomByUser])
 
   useEffect(() => {
     if (chatWindowRef.current) {
       chatWindowRef.current.scrollTop = chatWindowRef.current.scrollHeight;
     }
-  }, [chatHistory?.length]);
+  }, [chatHistoryByRoom?.length]);
 
   const onSendMessage = (e) => {
     e.preventDefault();
-    sendMessage(newMessage);
+
+    const room = breakoutRoomByUser[localParticipant.user_id] ?? currentRoom
+
+    sendChatMessage({
+      id: nanoid(),
+      message: newMessage,
+      senderId: localParticipant.user_id,
+      senderName: localParticipant.name,
+      room,
+      recipientsIds: breakoutRoomsMap[room] ? Object.keys(breakoutRoomsMap[room]) : unassignedUsersIds,
+    });
     setNewMessage('');
   }
 
@@ -50,8 +51,11 @@ export const ChatAside = () => {
     return null;
   }
 
+  const chatHistory = chatHistoryByRoom[currentRoom] || [];
+
   return (
     <Aside onClose={() => setShowAside(false)}>
+      <p>Current room: {currentRoom}</p>
       <div className="messages-container" ref={chatWindowRef}>
         {chatHistory.map((chatItem) => (
           <div
@@ -59,7 +63,7 @@ export const ChatAside = () => {
             key={chatItem.id}
           >
             <span className="content">{chatItem.message}</span>
-            <span className="sender">{chatItem.sender}</span>
+            <span className="sender">{chatItem.senderName}</span>
           </div>
         ))}
       </div>

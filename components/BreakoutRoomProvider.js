@@ -18,13 +18,16 @@ const buildMessage = (input) => {
 }
 
 export const BreakoutRoomProvider = ({ children }) => {
-  const { callObject, roomInfo } = useCallState();
+  const { callObject } = useCallState();
   const { participants, localParticipant } = useParticipants();
   const { setCustomCapsule } = useUIState();
 
-  const [isSessionActive, setIsSessionActive] = useState(false);
-  const [subParticipants, setSubParticipants] = useState([]);
-  const [breakoutRooms, setBreakoutRooms] = useState({});
+  const [ isSessionActive, setIsSessionActive ] = useState(false);
+  const [ subParticipants, setSubParticipants ] = useState([]);
+  const [ breakoutRooms ] = useState({});
+  const [ breakoutRoomByUser, setBreakoutRoomByUser ] = useState({});
+  const [ breakoutRoomsMap, setBreakoutRoomsMap ] = useState({});
+  const [ unassignedUsersIds, setUnassignedUsersIds ] = useState([]);
 
   const roomParticipants = useMemo(() => {
     if (!isSessionActive) return participants
@@ -54,17 +57,20 @@ export const BreakoutRoomProvider = ({ children }) => {
     setIsSessionActive(true);
 
     const { payload } = message;
-    const { breakoutRoomByUser, breakoutRoomsInput, unassignedUsersIds } = payload;
+    const { breakoutRoomByUser, breakoutRoomsMap, unassignedUsersIds } = payload;
     const { user_id: userId } = localParticipant;
     const assignedBreakoutRoom = breakoutRoomByUser[userId];
     const userIsUnassigned = unassignedUsersIds.includes(userId);
-    const roomMatesIds = userIsUnassigned ? unassignedUsersIds : Object.keys(breakoutRoomsInput[assignedBreakoutRoom] || {});
+    const roomMatesIds = userIsUnassigned ? unassignedUsersIds : Object.keys(breakoutRoomsMap[assignedBreakoutRoom] || {});
     const tracksList = roomMatesIds.reduce((acc, userId) => ({
       ...acc,
       [userId]: { setSubscribedTracks: true }
     }), {})
 
     setSubParticipants(roomMatesIds);
+    setBreakoutRoomByUser(() => breakoutRoomByUser)
+    setBreakoutRoomsMap(() => breakoutRoomsMap)
+    setUnassignedUsersIds(() => unassignedUsersIds)
 
     callObject.setSubscribeToTracksAutomatically(false);
     callObject.updateParticipants(tracksList);
@@ -153,6 +159,9 @@ export const BreakoutRoomProvider = ({ children }) => {
         breakoutRooms,
         participants: roomParticipants,
         participantCount,
+        breakoutRoomByUser,
+        breakoutRoomsMap,
+        unassignedUsersIds,
         endBreakoutRooms,
         sendBreakoutMessage,
         broadcastMessage,
