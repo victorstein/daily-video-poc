@@ -3,7 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 export const useBackgroundMusic = (musicSource, micSource) => {
   const ctx = window.AudioContext || window.webkitAudioContext;
   const [audioContext] = useState(new ctx())
-  const [bgMusic, setBgMusic] = useState(null)
+  const [bgMusic, setBgMusic] = useState()
   const [state, setState] = useState({})
 
   const getMicrophone = async () => {
