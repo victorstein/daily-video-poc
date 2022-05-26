@@ -3,6 +3,7 @@ import { useEffect, useState, useCallback } from "react";
 export const useBackgroundMusic = (musicSource, micSource) => {
   const ctx = window.AudioContext || window.webkitAudioContext;
   const [audioContext] = useState(new ctx())
+  const [bgMusic, setBgMusic] = useState(null)
   const [state, setState] = useState({})
 
   const getMicrophone = async () => {
@@ -33,12 +34,13 @@ export const useBackgroundMusic = (musicSource, micSource) => {
 
   const init = useCallback(async () => {
     const microphone = await getMicrophone()
-    const bgMusic = state.bgMusic || getBackgroundMusic()
+    const backgroundMusic = bgMusic || getBackgroundMusic()
     const micGain = audioContext.createGain()
     const mixedAudioTracks = mixTracks(microphone, bgMusic, micGain)
 
+    setBgMusic(backgroundMusic)
     setState({ audioContext, microphone, bgMusic, mixedAudioTracks, micGain })
-  }, [musicSource, micSource, state])
+  }, [musicSource, micSource, bgMusic])
 
   useEffect(() => {
     if (musicSource && micSource) {
