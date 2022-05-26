@@ -11,6 +11,7 @@ import App from '../components/App';
 import CreatingRoom from '../components/Prejoin/CreatingRoom';
 import Intro from '../components/Prejoin/Intro';
 import NotConfigured from '../components/Prejoin/NotConfigured';
+import { ChatProvider } from '@custom/shared/contexts/ChatProvider';
 
 /**
  * Index page
@@ -125,7 +126,9 @@ export default function Index({
           <TracksProvider>
             <MediaDeviceProvider>
               <WaitingRoomProvider>
-                {customAppComponent || <App />}
+                <ChatProvider>
+                  {customAppComponent || <App />}
+                </ChatProvider>
               </WaitingRoomProvider>
             </MediaDeviceProvider>
           </TracksProvider>

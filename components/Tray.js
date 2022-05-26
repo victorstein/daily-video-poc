@@ -4,11 +4,15 @@ import { TrayButton } from '@custom/shared/components/Tray';
 import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useUIState } from '@custom/shared/contexts/UIStateProvider';
 import { ReactComponent as IconBreakout } from '../shared/icons/breakout-sm.svg';
+import { ReactComponent as IconChat } from '../shared/icons/chat-md.svg';
 import { BREAKOUT_ROOM_MODAL } from './BreakoutRoomModal';
 import { useBreakoutRoom } from './BreakoutRoomProvider';
+import { CHAT_ASIDE } from '../shared/components/Aside/ChatAside';
+import { useChat } from '@custom/shared/contexts/ChatProvider';
 
 export const Tray = () => {
-  const { openModal } = useUIState();
+  const { openModal, toggleAside } = useUIState();
+  const { hasNewMessages } = useChat();
   const { isActive, endBreakoutRooms, sendBreakoutMessage, broadcastMessage } = useBreakoutRoom();
   const { localParticipant } = useParticipants();
   const userIsOwner = localParticipant.isOwner;
@@ -29,6 +33,15 @@ export const Tray = () => {
 
   return (
     <>
+      <TrayButton
+        label="Chat"
+        bubble={hasNewMessages}
+        onClick={() => {
+          toggleAside(CHAT_ASIDE);
+        }}
+      >
+        <IconChat />
+      </TrayButton>
       { userIsOwner && (
         <TrayButton
           label={isActive ? 'End' : 'Breakout'}
