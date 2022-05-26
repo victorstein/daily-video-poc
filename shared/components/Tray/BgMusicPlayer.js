@@ -1,10 +1,14 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import AudioPlayer from 'react-h5-audio-player';
 import 'react-h5-audio-player/lib/styles.css';
 
 export const BgMusicPlayer = ({ tracks, getRef }) => {
   const bgMusicComponent = useRef(null);
   const [trackIndex, setTrackIndex] = useState(0);
+
+  useEffect(() => {
+    getRef(bgMusicComponent?.current?.audio?.current)
+  }, [bgMusicComponent])
 
   const handleClickPrevious = () => {
     setTrackIndex((currentTrack) => currentTrack > 0 && currentTrack - 1);
@@ -13,10 +17,6 @@ export const BgMusicPlayer = ({ tracks, getRef }) => {
   const handleClickNext = () => {
     setTrackIndex((currentTrack) => currentTrack < tracks.length - 1 && currentTrack + 1);
   };
-
-  const getMusicComponentRef = () => {
-    return getRef(bgMusicComponent?.current?.audio?.current)
-  }
 
   return (
     <AudioPlayer
@@ -29,7 +29,6 @@ export const BgMusicPlayer = ({ tracks, getRef }) => {
       onClickPrevious={handleClickPrevious}
       onClickNext={handleClickNext}
       onEnded={handleClickNext}
-      getMusicComponentRef={getMusicComponentRef}
     />
   )
 }
