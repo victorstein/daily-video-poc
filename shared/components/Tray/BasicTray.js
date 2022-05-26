@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NETWORK_ASIDE } from '@custom/shared/components/Aside/NetworkAside';
 import { PEOPLE_ASIDE } from '@custom/shared/components/Aside/PeopleAside';
 import Button from '@custom/shared/components/Button';
@@ -17,20 +17,42 @@ import { ReactComponent as IconNetwork } from '../../icons/network-md.svg';
 import { ReactComponent as IconPeople } from '../../icons/people-md.svg';
 import { ReactComponent as IconSettings } from '../../icons/settings-md.svg';
 import { Tray, TrayButton } from './Tray';
-import AudioPlayer from 'react-h5-audio-player';
-import 'react-h5-audio-player/lib/styles.css';
 import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useBackgroundMusic } from '@custom/shared/hooks/useBackgroundMusic';
+import { BgMusicPlayer } from './BgMusicPlayer';
+
+const tracks = [
+  {
+    name: "Relax",
+    src: "assets/bg_music.mp3"
+  },
+  {
+    name: "Love",
+    src: "https://www.bensound.com/bensound-music/bensound-love.mp3"
+  },
+  {
+    name: "Piano Moment",
+    src: "https://www.bensound.com/bensound-music/bensound-pianomoment.mp3"
+  },
+  {
+    name: "E.R.F",
+    src: "https://www.bensound.com/bensound-music/bensound-erf.mp3"
+  },
+  {
+    name: "Dreams",
+    src: "https://www.bensound.com/bensound-music/bensound-dreams.mp3"
+  },
+]
 
 export const BasicTray = () => {
-  const bgMusicComponent = useRef(null);
+  const [bgMusicComponent, setBgMusicComponent] = useState(null)
   const responsive = useResponsive();
   const [showMore, setShowMore] = useState(false);
   const { callObject, leave } = useCallState();
   const { customTrayComponent, openModal, toggleAside } = useUIState();
   const { isCamMuted, currentDevices: { mic } } = useMediaDevices();
   const [isMicMuted, setIsMicMuted] = useState(false)
-  const { mixedAudioTracks, micGain } = useBackgroundMusic(bgMusicComponent?.current?.audio?.current, mic)
+  const { mixedAudioTracks, micGain } = useBackgroundMusic(bgMusicComponent, mic)
 
   const { isOwner } = useParticipants();
 
@@ -66,10 +88,9 @@ export const BasicTray = () => {
       {
         isOwner &&
           <div style={{ display: 'flex', justifyContent: 'center' }}>
-            <AudioPlayer
-              ref={bgMusicComponent}
-              src="assets/bg_music.mp3"
-              style={{ maxWidth: '70%' }}
+            <BgMusicPlayer
+              tracks={tracks}
+              getRef={setBgMusicComponent}
             />
           </div>
       }
