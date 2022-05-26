@@ -10,14 +10,6 @@ export const Header = () => {
   return useMemo(
     () => (
       <header className="room-header">
-        <img
-          src="/assets/daily-logo.svg"
-          alt="Daily"
-          className="logo"
-          width="80"
-          height="32"
-        />
-
         <HeaderCapsule>{process.env.PROJECT_TITLE}</HeaderCapsule>
         <HeaderCapsule>
           {`${participantCount} ${
@@ -41,10 +33,6 @@ export const Header = () => {
               var(--spacing-sm);
             align-items: center;
             width: 100%;
-          }
-
-          .logo {
-            margin-right: var(--spacing-xs);
           }
         `}</style>
       </header>
