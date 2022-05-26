@@ -11,18 +11,18 @@ export const BgMusicPlayer = ({ tracks, getRef }) => {
   }, [bgMusicComponent])
 
   const handleClickPrevious = () => {
-    setTrackIndex((currentTrack) => currentTrack > 0 && currentTrack - 1);
+    setTrackIndex((currentTrack) => Number(currentTrack > 1 && currentTrack - 1));
   };
   
   const handleClickNext = () => {
-    setTrackIndex((currentTrack) => currentTrack < tracks.length - 1 && currentTrack + 1);
+    setTrackIndex((currentTrack) => Number(currentTrack < tracks.length - 1 && currentTrack + 1));
   };
 
   return (
     <AudioPlayer
       ref={bgMusicComponent}
       src={tracks[trackIndex].src}
-      style={{ maxWidth: '70%' }}
+      style={{ maxWidth: '70%', color: 'black' }}
       showSkipControls={true}
       showJumpControls={false}
       header={`${tracks[trackIndex].name}`}
