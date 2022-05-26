@@ -23,24 +23,24 @@ import { BgMusicPlayer } from './BgMusicPlayer';
 
 const tracks = [
   {
+    name: "E.R.F",
+    src: "assets/erf.mp3"
+  },
+  {
     name: "Relax",
     src: "assets/bg_music.mp3"
   },
   {
     name: "Love",
-    src: "https://www.bensound.com/bensound-music/bensound-love.mp3"
+    src: "assets/love.mp3"
   },
   {
     name: "Piano Moment",
-    src: "https://www.bensound.com/bensound-music/bensound-pianomoment.mp3"
-  },
-  {
-    name: "E.R.F",
-    src: "https://www.bensound.com/bensound-music/bensound-erf.mp3"
+    src: "assets/piano.mp3"
   },
   {
     name: "Dreams",
-    src: "https://www.bensound.com/bensound-music/bensound-dreams.mp3"
+    src: "assets/dreams.mp3"
   },
 ]
 
