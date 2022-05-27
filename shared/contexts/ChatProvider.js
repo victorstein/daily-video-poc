@@ -21,8 +21,6 @@ export const ChatProvider = ({ children }) => {
       payload: input,
     }
 
-    handleChatMessage(messageInput);
-
     input.recipientsIds.forEach(id => {
       callObject.sendAppMessage({ message: messageInput }, id);
     })

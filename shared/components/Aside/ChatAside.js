@@ -62,8 +62,8 @@ export const ChatAside = () => {
             className={isLocalUser(chatItem.senderID) ? 'message local' : 'message'}
             key={chatItem.id}
           >
-            <span className="content">{chatItem.message}</span>
             <span className="sender">{chatItem.senderName}</span>
+            <span className="content">{chatItem.message}</span>
           </div>
         ))}
       </div>
@@ -108,13 +108,14 @@ export const ChatAside = () => {
         }
 
         .content {
-          color: var(--text-mid);
           display: block;
+          font-size: 0.9rem;
         }
 
         .sender {
           font-weight: var(--weight-medium);
           font-size: 0.75rem;
+          color: gray;
         }
 
         .chat-footer {

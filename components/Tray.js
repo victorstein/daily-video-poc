@@ -38,7 +38,7 @@ export const Tray = () => {
           <IconBreakout />
         </TrayButton>
       )}
-      { isActive && (
+      { (userIsOwner && isActive) && (
         <TrayButton
           label={'broadcast'}
           onClick={broadcastMessage}
