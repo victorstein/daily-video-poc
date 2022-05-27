@@ -152,179 +152,174 @@ export const HairCheck = () => {
     );
   }, [userName, joinCall, joining, setUserName]);
 
-  return (
-    <>
-      <main className="haircheck">
-        <img
-          src="/assets/daily-logo.svg"
-          alt="Daily.co"
-          width="132"
-          height="58"
-          className="logo"
-        />
-        <div className="panel">
-          <header>
-            <h2>Ready to join?</h2>
-          </header>
-          <div className="tile-container">
-            <div className="content">
-              <Button
-                className="device-button"
-                size="medium-square"
-                variant="blur"
-                onClick={() => openModal(DEVICE_MODAL)}
-              >
-                <IconSettings />
-              </Button>
+  const HairCheckComponent = useMemo(() => (
+    <main className="haircheck">
+      <div className="panel">
+        <header>
+          <h2>Ready to join?</h2>
+        </header>
+        <div className="tile-container">
+          <div className="content">
+            <Button
+              className="device-button"
+              size="medium-square"
+              variant="blur"
+              onClick={() => openModal(DEVICE_MODAL)}
+            >
+              <IconSettings />
+            </Button>
 
-              {isLoading && (
-                <div className="overlay-message">
-                  Loading devices, please wait...
-                </div>
-              )}
-              {hasError && (
-                <>
-                  {camError && (
-                    <div className="overlay-message">{camErrorVerbose}</div>
-                  )}
-                  {micError && (
-                    <div className="overlay-message">{micError}</div>
-                  )}
-                </>
-              )}
-            </div>
-            <div className="mute-buttons">
-              <MuteButton isMuted={isCamMuted} disabled={!!camError} />
-              <MuteButton mic isMuted={isMicMuted} disabled={!!micError} />
-            </div>
-            {tileMemo}
+            {isLoading && (
+              <div className="overlay-message">
+                Loading devices, please wait...
+              </div>
+            )}
+            {hasError && (
+              <>
+                {camError && (
+                  <div className="overlay-message">{camErrorVerbose}</div>
+                )}
+                {micError && (
+                  <div className="overlay-message">{micError}</div>
+                )}
+              </>
+            )}
           </div>
-          <footer>{waiting ? showWaitingMessage : showUsernameInput}</footer>
+          <div className="mute-buttons">
+            <MuteButton isMuted={isCamMuted} disabled={!!camError} />
+            <MuteButton mic isMuted={isMicMuted} disabled={!!micError} />
+          </div>
+          {tileMemo}
         </div>
+        <footer>{waiting ? <ShowWaitingMessage denied={denied} /> : showUsernameInput}</footer>
+      </div>
 
-        <style jsx>{`
-          .haircheck {
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            width: 100%;
-            background: url('/assets/pattern-bg.png') center center no-repeat;
-            background-size: 100%;
-          }
+      <style jsx>{`
+        .haircheck {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          height: 100%;
+          width: 100%;
+          background: url('/assets/pattern-bg.png') center center no-repeat;
+          background-size: 100%;
+        }
 
-          .haircheck .panel {
-            width: 580px;
-            text-align: center;
-          }
+        .haircheck .panel {
+          width: 580px;
+          text-align: center;
+        }
 
-          .haircheck .tile-container {
-            border-radius: var(--radius-md);
-            -webkit-mask-image: -webkit-radial-gradient(white, black);
-            overflow: hidden;
-            position: relative;
-          }
+        .haircheck .tile-container {
+          border-radius: var(--radius-md);
+          -webkit-mask-image: -webkit-radial-gradient(white, black);
+          overflow: hidden;
+          position: relative;
+        }
 
-          .haircheck header {
-            position: relative;
-            color: white;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            max-width: 480px;
-            margin: 0 auto;
-            border-radius: var(--radius-md) var(--radius-md) 0 0;
-            border-bottom: 0px;
-            padding: var(--spacing-md) 0 calc(6px + var(--spacing-md)) 0;
-          }
+        .haircheck header {
+          position: relative;
+          color: white;
+          border: 3px solid rgba(255, 255, 255, 0.1);
+          max-width: 480px;
+          margin: 0 auto;
+          border-radius: var(--radius-md) var(--radius-md) 0 0;
+          border-bottom: 0px;
+          padding: var(--spacing-md) 0 calc(6px + var(--spacing-md)) 0;
+        }
 
-          .haircheck header:before,
-          .haircheck footer:before {
-            content: '';
-            position: absolute;
-            height: 6px;
-            left: var(--spacing-sm);
-            right: var(--spacing-sm);
-            background: linear-gradient(
-              90deg,
-              var(--primary-default) 0%,
-              var(--secondary-dark) 100%
-            );
-            border-radius: 6px 6px 0px 0px;
-            bottom: 0px;
-          }
+        .haircheck header:before,
+        .haircheck footer:before {
+          content: '';
+          position: absolute;
+          height: 6px;
+          left: var(--spacing-sm);
+          right: var(--spacing-sm);
+          background: linear-gradient(
+            90deg,
+            var(--primary-default) 0%,
+            var(--secondary-dark) 100%
+          );
+          border-radius: 6px 6px 0px 0px;
+          bottom: 0px;
+        }
 
-          .haircheck footer:before {
-            top: 0px;
-            bottom: auto;
-            border-radius: 0px 0px 6px 6px;
-          }
+        .haircheck footer:before {
+          top: 0px;
+          bottom: auto;
+          border-radius: 0px 0px 6px 6px;
+        }
 
-          .haircheck header h2 {
-            margin: 0px;
-          }
+        .haircheck header h2 {
+          margin: 0px;
+        }
 
-          .haircheck .content {
-            position: absolute;
-            top: 0px;
-            left: 0px;
-            right: 0px;
-            bottom: 0px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 99;
-          }
+        .haircheck .content {
+          position: absolute;
+          top: 0px;
+          left: 0px;
+          right: 0px;
+          bottom: 0px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 99;
+        }
 
-          .haircheck .mute-buttons {
-            position: absolute;
-            bottom: 0px;
-            left: 0px;
-            right: 0px;
-            z-index: 99;
-            padding: var(--spacing-xs);
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--spacing-xs);
-          }
+        .haircheck .mute-buttons {
+          position: absolute;
+          bottom: 0px;
+          left: 0px;
+          right: 0px;
+          z-index: 99;
+          padding: var(--spacing-xs);
+          box-sizing: border-box;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--spacing-xs);
+        }
 
-          .haircheck .content :global(.device-button) {
-            position: absolute;
-            top: var(--spacing-xxs);
-            right: var(--spacing-xxs);
-          }
+        .haircheck .content :global(.device-button) {
+          position: absolute;
+          top: var(--spacing-xxs);
+          right: var(--spacing-xxs);
+        }
 
-          .haircheck .overlay-message {
-            color: var(--reverse);
-            padding: var(--spacing-xxs) var(--spacing-xs);
-            background: rgba(0, 0, 0, 0.35);
-            border-radius: var(--radius-sm);
-          }
+        .haircheck .overlay-message {
+          color: var(--reverse);
+          padding: var(--spacing-xxs) var(--spacing-xs);
+          background: rgba(0, 0, 0, 0.35);
+          border-radius: var(--radius-sm);
+        }
 
-          .haircheck footer {
-            position: relative;
-            border: 3px solid rgba(255, 255, 255, 0.1);
-            max-width: 480px;
-            margin: 0 auto;
-            border-radius: 0 0 var(--radius-md) var(--radius-md);
-            padding: calc(6px + var(--spacing-md)) var(--spacing-sm)
-              var(--spacing-md) var(--spacing-sm);
-            border-top: 0px;
+        .haircheck footer {
+          position: relative;
+          border: 3px solid rgba(255, 255, 255, 0.1);
+          max-width: 480px;
+          margin: 0 auto;
+          border-radius: 0 0 var(--radius-md) var(--radius-md);
+          padding: calc(6px + var(--spacing-md)) var(--spacing-sm)
+            var(--spacing-md) var(--spacing-sm);
+          border-top: 0px;
 
-            display: grid;
-            grid-template-columns: 1fr auto;
-            grid-column-gap: var(--spacing-xs);
-          }
+          display: grid;
+          grid-template-columns: 1fr auto;
+          grid-column-gap: var(--spacing-xs);
+        }
 
-          .logo {
-            position: absolute;
-            top: var(--spacing-sm);
-            left: var(--spacing-sm);
-          }
-        `}</style>
-      </main>
-    </>
+        .logo {
+          position: absolute;
+          top: var(--spacing-sm);
+          left: var(--spacing-sm);
+        }
+      `}</style>
+    </main>
+  ))
+
+  return (
+    !waiting ? HairCheckComponent : <WaittingSlider denied={denied} />
   );
 };
 
