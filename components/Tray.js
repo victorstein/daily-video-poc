@@ -13,13 +13,15 @@ import { BROADCAST_MODAL } from './BroadcastModal';
 export const Tray = () => {
   const { openModal, toggleAside } = useUIState();
   const { isActive, endBreakoutRooms} = useBreakoutRoom();
-  const { localParticipant } = useParticipants();
+  const { localParticipant, participants } = useParticipants();
   const userIsOwner = localParticipant.isOwner;
 
   const handleSession = () => {
     if (isActive) endBreakoutRooms();
     else openModal(BREAKOUT_ROOM_MODAL);
   }
+
+  console.log('participants', participants)
 
   return (
     <>
@@ -31,7 +33,7 @@ export const Tray = () => {
       >
         <IconChat />
       </TrayButton>
-      { userIsOwner && (
+      { (userIsOwner && participants?.length > 1)&& (
         <TrayButton
           label={isActive ? 'End' : 'Breakout'}
           orange={isActive}

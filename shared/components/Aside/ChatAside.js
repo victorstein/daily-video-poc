@@ -33,6 +33,13 @@ export const ChatAside = () => {
     e.preventDefault();
 
     const room = breakoutRoomByUser[localParticipant.user_id] ?? currentRoom
+    const recipientsIds = (
+      breakoutRoomsMap[room] ?
+      Object.keys(breakoutRoomsMap[room]) :
+      unassignedUsersIds.length ?
+      unassignedUsersIds :
+      ['*']
+    )
 
     sendChatMessage({
       id: nanoid(),
@@ -40,7 +47,7 @@ export const ChatAside = () => {
       senderId: localParticipant.user_id,
       senderName: localParticipant.name,
       room,
-      recipientsIds: breakoutRoomsMap[room] ? Object.keys(breakoutRoomsMap[room]) : unassignedUsersIds,
+      recipientsIds,
     });
     setNewMessage('');
   }
