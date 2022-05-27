@@ -8,12 +8,10 @@ import { ReactComponent as IconChat } from '../shared/icons/chat-md.svg';
 import { BREAKOUT_ROOM_MODAL } from './BreakoutRoomModal';
 import { useBreakoutRoom } from './BreakoutRoomProvider';
 import { CHAT_ASIDE } from '../shared/components/Aside/ChatAside';
-import { useChat } from '@custom/shared/contexts/ChatProvider';
 
 export const Tray = () => {
   const { openModal, toggleAside } = useUIState();
-  const { hasNewMessages } = useChat();
-  const { isActive, endBreakoutRooms, sendBreakoutMessage, broadcastMessage } = useBreakoutRoom();
+  const { isActive, endBreakoutRooms, broadcastMessage } = useBreakoutRoom();
   const { localParticipant } = useParticipants();
   const userIsOwner = localParticipant.isOwner;
 
@@ -22,20 +20,10 @@ export const Tray = () => {
     else openModal(BREAKOUT_ROOM_MODAL);
   }
 
-  if (!userIsOwner && isActive) return (
-    <TrayButton
-      label={'message'}
-      onClick={sendBreakoutMessage}
-    >
-      <IconBreakout />
-    </TrayButton>
-  );
-
   return (
     <>
       <TrayButton
         label="Chat"
-        bubble={hasNewMessages}
         onClick={() => {
           toggleAside(CHAT_ASIDE);
         }}

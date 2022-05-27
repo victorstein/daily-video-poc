@@ -130,6 +130,14 @@ export const GlobalStyle = () => (
       height: 1px;
       background: var(--gray-light);
     }
+
+    [id*="style_toast_container"] > div {
+      left: 200px;
+    }
+
+    [id*="style_toast_container"] .my-toast > div {
+      background: var(--secondary-dark);
+    }
   `}</style>
 );
 
