@@ -4,13 +4,16 @@ import { TrayButton } from '@custom/shared/components/Tray';
 import { useParticipants } from '@custom/shared/contexts/ParticipantsProvider';
 import { useUIState } from '@custom/shared/contexts/UIStateProvider';
 import { ReactComponent as IconBreakout } from '../shared/icons/breakout-sm.svg';
+import { ReactComponent as IconChat } from '../shared/icons/chat-md.svg';
 import { BREAKOUT_ROOM_MODAL } from './BreakoutRoomModal';
 import { useBreakoutRoom } from './BreakoutRoomProvider';
+import { CHAT_ASIDE } from '../shared/components/Aside/ChatAside';
+import { BROADCAST_MODAL } from './BroadcastModal';
 
 export const Tray = () => {
-  const { openModal } = useUIState();
-  const { isActive, endBreakoutRooms, sendBreakoutMessage, broadcastMessage } = useBreakoutRoom();
-  const { localParticipant } = useParticipants();
+  const { openModal, toggleAside } = useUIState();
+  const { isActive, endBreakoutRooms} = useBreakoutRoom();
+  const { localParticipant, participants } = useParticipants();
   const userIsOwner = localParticipant.isOwner;
 
   const handleSession = () => {
@@ -18,18 +21,19 @@ export const Tray = () => {
     else openModal(BREAKOUT_ROOM_MODAL);
   }
 
-  if (!userIsOwner && isActive) return (
-    <TrayButton
-      label={'message'}
-      onClick={sendBreakoutMessage}
-    >
-      <IconBreakout />
-    </TrayButton>
-  );
+  console.log('participants', participants)
 
   return (
     <>
-      { userIsOwner && (
+      <TrayButton
+        label="Chat"
+        onClick={() => {
+          toggleAside(CHAT_ASIDE);
+        }}
+      >
+        <IconChat />
+      </TrayButton>
+      { (userIsOwner && participants?.length > 1)&& (
         <TrayButton
           label={isActive ? 'End' : 'Breakout'}
           orange={isActive}
@@ -37,10 +41,12 @@ export const Tray = () => {
           <IconBreakout />
         </TrayButton>
       )}
-      { isActive && (
+      { (userIsOwner && isActive) && (
         <TrayButton
           label={'broadcast'}
-          onClick={broadcastMessage}
+          onClick={() => {
+            openModal(BROADCAST_MODAL);
+          }}
         >
           <IconBreakout />
         </TrayButton>

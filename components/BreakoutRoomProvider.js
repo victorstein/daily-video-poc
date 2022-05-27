@@ -10,6 +10,8 @@ import { useUIState } from '@custom/shared/contexts/UIStateProvider';
 import PropTypes from 'prop-types';
 import toast from 'react-simple-toasts';
 import { sleep } from 'utils/sleep';
+import { getUniqueValues } from 'utils/getUniqueValues';
+import { nanoid } from 'nanoid';
 
 export const BreakoutRoomContext = createContext();
 
@@ -18,13 +20,16 @@ const buildMessage = (input) => {
 }
 
 export const BreakoutRoomProvider = ({ children }) => {
-  const { callObject, roomInfo } = useCallState();
+  const { callObject } = useCallState();
   const { participants, localParticipant } = useParticipants();
   const { setCustomCapsule } = useUIState();
 
-  const [isSessionActive, setIsSessionActive] = useState(false);
-  const [subParticipants, setSubParticipants] = useState([]);
-  const [breakoutRooms, setBreakoutRooms] = useState({});
+  const [ isSessionActive, setIsSessionActive ] = useState(false);
+  const [ subParticipants, setSubParticipants ] = useState([]);
+  const [ breakoutRooms ] = useState({});
+  const [ breakoutRoomByUser, setBreakoutRoomByUser ] = useState({});
+  const [ breakoutRoomsMap, setBreakoutRoomsMap ] = useState({});
+  const [ unassignedUsersIds, setUnassignedUsersIds ] = useState([]);
 
   const roomParticipants = useMemo(() => {
     if (!isSessionActive) return participants
@@ -54,17 +59,20 @@ export const BreakoutRoomProvider = ({ children }) => {
     setIsSessionActive(true);
 
     const { payload } = message;
-    const { breakoutRoomByUser, breakoutRoomsInput, unassignedUsersIds } = payload;
+    const { breakoutRoomByUser, breakoutRoomsMap, unassignedUsersIds } = payload;
     const { user_id: userId } = localParticipant;
     const assignedBreakoutRoom = breakoutRoomByUser[userId];
     const userIsUnassigned = unassignedUsersIds.includes(userId);
-    const roomMatesIds = userIsUnassigned ? unassignedUsersIds : Object.keys(breakoutRoomsInput[assignedBreakoutRoom] || {});
+    const roomMatesIds = userIsUnassigned ? unassignedUsersIds : Object.keys(breakoutRoomsMap[assignedBreakoutRoom] || {});
     const tracksList = roomMatesIds.reduce((acc, userId) => ({
       ...acc,
       [userId]: { setSubscribedTracks: true }
     }), {})
 
     setSubParticipants(roomMatesIds);
+    setBreakoutRoomByUser(() => breakoutRoomByUser)
+    setBreakoutRoomsMap(() => breakoutRoomsMap)
+    setUnassignedUsersIds(() => unassignedUsersIds)
 
     callObject.setSubscribeToTracksAutomatically(false);
     callObject.updateParticipants(tracksList);
@@ -72,31 +80,51 @@ export const BreakoutRoomProvider = ({ children }) => {
     setCustomCapsule()
   }
 
-  const sendBreakoutMessage = async () => {
-    const breakoutRoomMates = subParticipants.filter(p => p !== localParticipant.user_id);
-    breakoutRoomMates.forEach(mate => {
-      callObject.sendAppMessage(buildMessage({ type: 'breakout-message' }), mate);
+  const broadcastMessage = async (message = 'BREAKOUT ALERT') => {
+    const peopleIdsInBreakoutRooms = getUniqueValues(Object.keys(breakoutRoomByUser));
+    const broadcastMessage = buildMessage({
+      type: 'broadcast',
+      payload: { message: 'Broadcast alert!!!' }
     })
 
-    handleBreakoutMessage();
+    peopleIdsInBreakoutRooms.forEach((userId) => {
+      callObject.sendAppMessage(broadcastMessage, userId);
+    })
+
+    sendBroadcastChatMessage(message);
   };
-  
-  const handleBreakoutMessage = async (e) => {
-    console.log('handleBreakoutMessage', e);
+
+  const sendBroadcastChatMessage = (message) => {
+    const breakoutRooms = Object.keys(breakoutRoomsMap);
+    const buildChatMessage = (room) => {
+      return buildMessage({
+        type: 'chat-message',
+        payload: {
+          id: nanoid(),
+          message,
+          senderId: localParticipant.user_id,
+          senderName: localParticipant.name,
+          room,
+          recipientsIds: breakoutRoomsMap[room] || [],
+        },
+      })
+    }
+
+    breakoutRooms.forEach((room) => {
+      Object.keys(breakoutRoomsMap[room] || {}).forEach((userId) => {
+        callObject.sendAppMessage(buildChatMessage(room), userId);
+      })
+    })
   }
 
-  const broadcastMessage = async () => {
-    const guests = participants.filter(p => !p.isOwner);
-    const guestsIds = guests.map(g => g.user_id)
-    guestsIds.forEach((guestId) => {
-      callObject.sendAppMessage(buildMessage({ type: 'broadcast' }), guestId);
-    })
-  };
+  const handleBroadcast = async ({ payload }) => {
+    console.log('handleBroadcast', payload);
 
-  const handleBroadcast = async (e) => {
-    console.log('handleBroadcast', e);
-
-    toast('Broadcast message sent', 10000);
+    toast(payload.message, {
+      clickClosable: true,
+      time: 5000,
+      className: 'my-toast'
+    });
   }
 
   const endBreakoutRooms = async () => {
@@ -118,7 +146,6 @@ export const BreakoutRoomProvider = ({ children }) => {
 
     const handlers = {
       'create-breakout-rooms': handleCreateBreakoutRooms,
-      'breakout-message': handleBreakoutMessage,
       'broadcast': handleBroadcast,
       'end-breakout-rooms': handleEndBreakoutRooms,
     }
@@ -153,8 +180,10 @@ export const BreakoutRoomProvider = ({ children }) => {
         breakoutRooms,
         participants: roomParticipants,
         participantCount,
+        breakoutRoomByUser,
+        breakoutRoomsMap,
+        unassignedUsersIds,
         endBreakoutRooms,
-        sendBreakoutMessage,
         broadcastMessage,
         createBreakoutRooms,
       }}
