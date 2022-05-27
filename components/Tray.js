@@ -8,10 +8,11 @@ import { ReactComponent as IconChat } from '../shared/icons/chat-md.svg';
 import { BREAKOUT_ROOM_MODAL } from './BreakoutRoomModal';
 import { useBreakoutRoom } from './BreakoutRoomProvider';
 import { CHAT_ASIDE } from '../shared/components/Aside/ChatAside';
+import { BROADCAST_MODAL } from './BroadcastModal';
 
 export const Tray = () => {
   const { openModal, toggleAside } = useUIState();
-  const { isActive, endBreakoutRooms, broadcastMessage } = useBreakoutRoom();
+  const { isActive, endBreakoutRooms} = useBreakoutRoom();
   const { localParticipant } = useParticipants();
   const userIsOwner = localParticipant.isOwner;
 
@@ -41,7 +42,9 @@ export const Tray = () => {
       { (userIsOwner && isActive) && (
         <TrayButton
           label={'broadcast'}
-          onClick={broadcastMessage}
+          onClick={() => {
+            openModal(BROADCAST_MODAL);
+          }}
         >
           <IconBreakout />
         </TrayButton>

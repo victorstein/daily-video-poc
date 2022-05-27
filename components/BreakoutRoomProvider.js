@@ -84,7 +84,7 @@ export const BreakoutRoomProvider = ({ children }) => {
     const peopleIdsInBreakoutRooms = getUniqueValues(Object.keys(breakoutRoomByUser));
     const broadcastMessage = buildMessage({
       type: 'broadcast',
-      payload: { message }
+      payload: { message: 'Broadcast alert!!!' }
     })
 
     peopleIdsInBreakoutRooms.forEach((userId) => {
@@ -122,7 +122,7 @@ export const BreakoutRoomProvider = ({ children }) => {
 
     toast(payload.message, {
       clickClosable: true,
-      time: 10000000,
+      time: 5000,
       className: 'my-toast'
     });
   }
