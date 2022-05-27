@@ -137,6 +137,9 @@ export const BreakoutRoomProvider = ({ children }) => {
 
     setIsSessionActive(false);
     setCustomCapsule();
+    setBreakoutRoomByUser({})
+    setBreakoutRoomsMap({})
+    setUnassignedUsersIds([])
     callObject.setSubscribeToTracksAutomatically(true);
   };
 
