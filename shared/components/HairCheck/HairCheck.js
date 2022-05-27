@@ -2,7 +2,6 @@ import React, { useState, useEffect, useMemo } from 'react';
 import Button from '@custom/shared/components/Button';
 import { DEVICE_MODAL } from '@custom/shared/components/DeviceSelectModal/DeviceSelectModal';
 import { TextInput } from '@custom/shared/components/Input';
-import Loader from '@custom/shared/components/Loader';
 import MuteButton from '@custom/shared/components/MuteButton';
 import Tile from '@custom/shared/components/Tile';
 import { ACCESS_STATE_LOBBY } from '@custom/shared/constants';
@@ -21,6 +20,8 @@ import {
 import IconSettings from '../../icons/settings-sm.svg';
 
 import { useDeepCompareMemo } from 'use-deep-compare';
+import { WaittingSlider } from './Slider';
+import { ShowWaitingMessage } from './WaitingMessage';
 
 /**
  * Hair check
@@ -130,30 +131,6 @@ export const HairCheck = () => {
         return 'unknown';
     }
   }, [camError]);
-
-  const showWaitingMessage = useMemo(() => {
-    return (
-      <div className="waiting">
-        <Loader />
-        {denied ? (
-          <span>Call owner denied request</span>
-        ) : (
-          <span>Waiting for host to grant access</span>
-        )}
-        <style jsx>{`
-          .waiting {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-          }
-
-          .waiting span {
-            margin-left: var(--spacing-xxs);
-          }
-        `}</style>
-      </div>
-    );
-  }, [denied]);
 
   const showUsernameInput = useMemo(() => {
     return (
