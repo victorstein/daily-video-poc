@@ -39,7 +39,7 @@ export const ChatAside = () => {
       unassignedUsersIds.length ?
       unassignedUsersIds :
       ['*']
-    )
+    ).filter(id => id !== localParticipant.user_id);
 
     sendChatMessage({
       id: nanoid(),
