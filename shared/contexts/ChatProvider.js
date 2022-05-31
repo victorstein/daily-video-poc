@@ -41,12 +41,19 @@ export const ChatProvider = ({ children }) => {
     }))
   }
 
+  const handleEndBreakoutRooms = () => {
+    setChatHistoryByRoom(prev => ({
+      main: prev.main
+    }));
+  }
+
   // map app messages to appropriate handlers
   const handleAppMessage = async (e) => {
     console.info('handleAppMessage', e);
 
     const handlers = {
       'chat-message': handleChatMessage,
+      'end-breakout-rooms': handleEndBreakoutRooms,
     }
 
     const eventType = e.data.message.type;
@@ -66,7 +73,9 @@ export const ChatProvider = ({ children }) => {
 
     callObject.on('app-message', handleAppMessage);
 
-    return () => callObject.off('app-message', handleAppMessage);
+    return () => {
+      callObject.off('app-message', handleAppMessage)
+    };
   }, [callObject, handleAppMessage]);
 
   return (
