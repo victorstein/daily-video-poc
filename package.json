@@ -25,7 +25,9 @@
     "react-h5-audio-player": "^3.8.4",
     "react-portal": "^4.2.1",
     "react-simple-toasts": "^2.2.3",
+    "react-slick": "^0.29.0",
     "shallow-equal": "^1.2.1",
+    "slick-carousel": "^1.8.1",
     "use-deep-compare": "^1.1.0"
   },
   "devDependencies": {
