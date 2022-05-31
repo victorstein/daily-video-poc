@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { CallProvider } from '@custom/shared/contexts/CallProvider';
 import { MediaDeviceProvider } from '@custom/shared/contexts/MediaDeviceProvider';
 import { ParticipantsProvider } from '@custom/shared/contexts/ParticipantsProvider';
@@ -34,6 +34,26 @@ export default function Index({
   customAppComponent,
 }) {
   const [roomName, setRoomName] = useState();
+  const [initialURLCheck, setInitialURLCheck] = useState(false); // crazy workaround for weird bug (lol)
+
+  useEffect(() => {
+    const searchString = window.location.search?.substring?.(1) || '';
+    const params = new URLSearchParams(searchString);
+    const roomName = params.get("gather_id");
+    setRoomName(roomName);
+
+    const isOwner = params.get("is_owner") === "true";
+
+    if (isOwner && roomName) {
+      getMeetingToken(roomName, isOwner).then(() => {
+        setInitialURLCheck(true)
+      });
+      return
+    }
+
+    setInitialURLCheck(true)
+  }, [])
+
   const [fetchingToken, setFetchingToken] = useState(false);
   const [token, setToken] = useState();
   const [tokenError, setTokenError] = useState();
@@ -71,6 +91,8 @@ export default function Index({
 
     return true;
   }, []);
+
+  if (!initialURLCheck) return null
 
   const isReady = !!(isConfigured && roomName);
 
