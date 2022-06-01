@@ -21,7 +21,9 @@ export const Aside = ({ onClose, children }) => (
     <style jsx>{`
       .call-aside {
         background: white;
-        position: relative;
+        position: absolute;
+        right: 0;
+        z-index: 2;
         flex-shrink: 0;
         flex-grow: 0;
         width: ${ASIDE_WIDTH}px;
