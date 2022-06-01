@@ -34,7 +34,6 @@ export const useBackgroundMusic = (musicSource, micSource) => {
     const ctx = window.AudioContext || window.webkitAudioContext;
     const audioContext = state.audioContext || new ctx()
     const microphone = await getMicrophone(audioContext)
-    console.log("BG MUSIIIIIIICCCCCC", bgMusic)
     const backgroundMusic = bgMusic || getBackgroundMusic(audioContext)
     const micGain = audioContext.createGain(audioContext)
     const mixedAudioTracks = mixTracks(audioContext, microphone, bgMusic, micGain)
