@@ -189,8 +189,10 @@ export const useCallMachine = ({
       dailyConfig: {
         experimentalChromeVideoMuteLightOff: true,
         useDevicePreferenceCookies: true,
-      },
+      }
     });
+
+    co.setNetworkTopology({ topology: 'sfu' })
 
     setDaily(co);
     preAuth(co);

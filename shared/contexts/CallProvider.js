@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
 import {
   ACCESS_STATE_LOBBY,
   ACCESS_STATE_UNKNOWN,
-  VIDEO_QUALITY_AUTO,
+  VIDEO_QUALITY_HIGH,
 } from '../constants';
 import { useNetworkState } from '../hooks/useNetworkState';
 import { useCallMachine } from './useCallMachine';
@@ -32,7 +32,7 @@ export const CallProvider = ({
   subscribeToTracksAutomatically = true,
 }) => {
   const [roomInfo, setRoomInfo] = useState(null);
-  const [videoQuality, setVideoQuality] = useState(VIDEO_QUALITY_AUTO);
+  const [videoQuality, setVideoQuality] = useState(VIDEO_QUALITY_HIGH);
   const [showLocalVideo, setShowLocalVideo] = useState(true);
   const [preJoinNonAuthorized, setPreJoinNonAuthorized] = useState(false);
   const [enableRecording, setEnableRecording] = useState(null);
