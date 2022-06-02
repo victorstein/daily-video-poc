@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NETWORK_ASIDE } from '@custom/shared/components/Aside/NetworkAside';
 import { PEOPLE_ASIDE } from '@custom/shared/components/Aside/PeopleAside';
 import Button from '@custom/shared/components/Button';
@@ -45,14 +45,15 @@ const tracks = [
 ]
 
 export const BasicTray = () => {
-  const [bgMusicComponent, setBgMusicComponent] = useState(null)
+  const bgMusicComponent = useRef(null)
   const responsive = useResponsive();
   const [showMore, setShowMore] = useState(false);
   const { callObject, leave } = useCallState();
   const { customTrayComponent, openModal, toggleAside } = useUIState();
   const { isCamMuted, currentDevices: { mic } } = useMediaDevices();
   const [isMicMuted, setIsMicMuted] = useState(false)
-  const { mixedAudioTracks, micGain } = useBackgroundMusic(bgMusicComponent, mic)
+  const backgroundMusicComponent = bgMusicComponent?.current?.audio?.current
+  const { mixedAudioTracks, micGain } = useBackgroundMusic(backgroundMusicComponent, mic)
 
   const { isOwner } = useParticipants();
 
@@ -90,7 +91,7 @@ export const BasicTray = () => {
           <div style={{ display: 'flex', justifyContent: 'center' }}>
             <BgMusicPlayer
               tracks={tracks}
-              getRef={setBgMusicComponent}
+              ref={bgMusicComponent}
             />
           </div>
       }
