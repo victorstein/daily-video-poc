@@ -8,9 +8,9 @@ export const ShowWaitingMessage = ({ denied }) => {
         <div className="waiting">
           <Loader />
           {denied ? (
-            <span>Call owner denied request</span>
+            <h3>Call owner denied request</h3>
           ) : (
-            <span>Waiting for host to grant access</span>
+            <h2>Waiting for host to grant access</h2>
           )}
           <style jsx>{`
             .waiting {

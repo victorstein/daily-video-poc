@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 export const Loader = ({
   color = 'currentColor',
-  size = 24,
+  size = 64,
   centered = false,
 }) => (
   <svg
