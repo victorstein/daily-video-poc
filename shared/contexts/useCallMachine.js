@@ -192,8 +192,6 @@ export const useCallMachine = ({
       }
     });
 
-    co.setNetworkTopology({ topology: 'sfu' })
-
     setDaily(co);
     preAuth(co);
   }, [daily, url, state, preAuth]);
