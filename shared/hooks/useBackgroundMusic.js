@@ -1,52 +1,59 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useEffect } from "react";
 
 export const useBackgroundMusic = (musicSource, micSource) => {
-  const [bgMusic, setBgMusic] = useState()
+  const ctx = window.AudioContext || window.webkitAudioContext;
+  const [audioContext] = useState(new ctx())
+  const [bgMusic, setBgMusic] = useState(null)
+  const [microphone, setMic] = useState(null)
   const [state, setState] = useState({})
 
-  const getMicrophone = async (context) => {
+  const getMicrophone = async () => {
     const microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: { micSource } })
-    const microphone = context.createMediaStreamSource(microphoneStream)
+    const microphone = audioContext.createMediaStreamSource(microphoneStream)
     return microphone
   }
 
-  const getBackgroundMusic = (context) => {
-    const bgMusic = context.createMediaElementSource(musicSource)
-    bgMusic.connect(context.destination)
+  const getBackgroundMusic = () => {
+    const bgMusic = audioContext.createMediaElementSource(musicSource)
+    bgMusic.connect(audioContext.destination)
     return bgMusic
   }
 
-  const mixTracks = (context, microphone, bgMusic, micGain) => {
-    const mixedOutput = context.createMediaStreamDestination();
+  const mixTracks = (micGain) => {
+    const mixedOutput = audioContext.createMediaStreamDestination();
     
-    // Get individaul control of the microphone
+    // Get individual control of the microphone
     microphone.connect(micGain)
     micGain.connect(mixedOutput)
 
-    // Add background music if needed
-    if (bgMusic) { bgMusic.connect(mixedOutput) }
+    bgMusic.connect(mixedOutput)
 
     const mixedAudioTracks = mixedOutput.stream.getAudioTracks()[0]
     return mixedAudioTracks
   }
 
-  const init = useCallback(async () => {
-    const ctx = window.AudioContext || window.webkitAudioContext;
-    const audioContext = state.audioContext || new ctx()
-    const microphone = await getMicrophone(audioContext)
-    const backgroundMusic = bgMusic || getBackgroundMusic(audioContext)
-    const micGain = audioContext.createGain(audioContext)
-    const mixedAudioTracks = mixTracks(audioContext, microphone, bgMusic, micGain)
+  useEffect(() => {
+    if (microphone && bgMusic) {
+      const micGain = audioContext.createGain()
+      const mixedAudioTracks = mixTracks(micGain)
 
-    setBgMusic(backgroundMusic)
-    setState({ audioContext, microphone, mixedAudioTracks, micGain })
-  }, [musicSource, micSource, bgMusic])
+      setState({ mixedAudioTracks, micGain })
+    }
+  }, [microphone, bgMusic])
+  
+  useEffect(() => {
+    const startMic = async () => {
+      const microphone = await getMicrophone()
+      setMic(microphone)
+    }
+    startMic()
+  }, [micSource])
 
   useEffect(() => {
-    if (musicSource && micSource) {
-      init()
+    if (musicSource && !bgMusic) {
+      setBgMusic(getBackgroundMusic())
     }
-  }, [musicSource, micSource])
+  }, [musicSource])
 
   return state
 }
