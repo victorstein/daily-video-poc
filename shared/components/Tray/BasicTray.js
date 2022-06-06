@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { NETWORK_ASIDE } from '@custom/shared/components/Aside/NetworkAside';
-import { PEOPLE_ASIDE } from '@custom/shared/components/Aside/PeopleAside';
 import Button from '@custom/shared/components/Button';
 import { DEVICE_MODAL } from '@custom/shared/components/DeviceSelectModal';
 import { useCallState } from '@custom/shared/contexts/CallProvider';
@@ -43,6 +42,8 @@ const tracks = [
     src: "assets/dreams.mp3"
   },
 ]
+
+export const PEOPLE_ASIDE = 'people';
 
 export const BasicTray = () => {
   const bgMusicComponent = useRef(null)

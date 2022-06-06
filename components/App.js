@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import Modals from '@custom/basic-call/components/App/Modals';
-import ExpiryTimer from '@custom/shared/components/ExpiryTimer';
 import { useCallState } from '@custom/shared/contexts/CallProvider';
 import { useCallUI } from '@custom/shared/hooks/useCallUI';
 import PropTypes from 'prop-types';
@@ -22,7 +21,6 @@ export const App = ({ customComponentForState }) => {
   return useMemo(
     () => (
       <BreakoutRoomProvider>
-        {roomExp && <ExpiryTimer expiry={roomExp} />}
         <div className="app">
           {componentForState()}
           <Modals />
