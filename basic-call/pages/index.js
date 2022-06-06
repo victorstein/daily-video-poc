@@ -7,7 +7,6 @@ import { UIStateProvider } from '@custom/shared/contexts/UIStateProvider';
 import { WaitingRoomProvider } from '@custom/shared/contexts/WaitingRoomProvider';
 import getDemoProps from '@custom/shared/lib/demoProps';
 import PropTypes from 'prop-types';
-import App from '../components/App';
 import CreatingRoom from '../components/Prejoin/CreatingRoom';
 import Intro from '../components/Prejoin/Intro';
 import NotConfigured from '../components/Prejoin/NotConfigured';
@@ -149,7 +148,7 @@ export default function Index({
             <MediaDeviceProvider>
               <WaitingRoomProvider>
                 <ChatProvider>
-                  {customAppComponent || <App />}
+                  {customAppComponent}
                 </ChatProvider>
               </WaitingRoomProvider>
             </MediaDeviceProvider>
